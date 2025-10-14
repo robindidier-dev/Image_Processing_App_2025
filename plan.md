@@ -19,7 +19,7 @@ src/main/java/imageprocessingapp/
    └── tool/                      # Contrôleurs des outils
 
 src/main/resources/imageprocessingapp/
-├── view/                        
+├── view/                      
 │  └── MainView.fxml              # Interface principale (FXML)
 └── dialogs/                      # Fenêtres de dialogue
 
@@ -28,7 +28,7 @@ src/test/java/imageprocessingapp/
 └── integration/                  # Tests d'intégration
 ```
 
-## Répartition des tâches 
+## Répartition des tâches
 
 ### **Etape 1 : Infrastructure de base**
 
@@ -145,13 +145,13 @@ Feature complète répartie par couche MVC.
 
 ### To-dos
 
-- [x] Supprimer le package teamteacher et mettre à jour module-info.java 
-- [ ] Créer MainApp.java, MainController.java et MainView.fxml avec menu/toolbar/imageview 
-- [ ] Implémenter le système de couleur (ColorDisplay widget, ColorPickerDialog, property) 
-- [ ] Créer Tool interface, PaintTool, PickerTool et ToolSelector widget 
-- [ ] Ajouter menu File avec Open et Save image 
-- [ ] Implémenter KdTree avec Point2D, insertion et recherche plus proche voisin 
-- [ ] Créer MosaicFilter utilisant KdTree pour effet mosaïque 
+- [X] Supprimer le package teamteacher et mettre à jour module-info.java
+- [X] Créer MainApp.java, MainController.java et MainView.fxml avec menu/toolbar/imageview
+- [ ] Implémenter le système de couleur (ColorDisplay widget, ColorPickerDialog, property)
+- [ ] Créer Tool interface, PaintTool, PickerTool et ToolSelector widget
+- [X] Ajouter menu File avec Open et Save image
+- [ ] Implémenter KdTree avec Point2D, insertion et recherche plus proche voisin
+- [ ] Créer MosaicFilter utilisant KdTree pour effet mosaïque
 - [ ] Ajouter MosaicDialog et entrée menu Filter > Mosaic Effect
 - [ ] Implémenter EnergyCalculator pour calcul gradient des pixels
 - [ ] Créer SeamCarver avec programmation dynamique et backtracking

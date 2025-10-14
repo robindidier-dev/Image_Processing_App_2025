@@ -4,10 +4,10 @@
 
 ```
 LOCAL
-├── main                      # Branche stable, suit classroom/main
+├── main                      # Branche stable, suit origin/main
 └── nom/feature               # Votre branche de feature pour développer
 
-🌐 REMOTE classroom 
+REMOTE origin 
 ├── main                      # Branche principale 
 ├── paulantoine/feature       # Feature de PA
 ├── robin/feature             # Feature de Robin
@@ -31,7 +31,7 @@ LOCAL
 ```bash
 # 1. Récupérer le travail de l'équipe
 git checkout main
-git pull classroom main
+git pull origin main
 
 # 2. Mettre à jour votre branche feature
 git checkout votre-nom/votre-feature
@@ -53,8 +53,8 @@ git checkout votre-nom/votre-feature
 git add .
 git commit -m "message"
 
-# 3. Push régulier vers classroom (optionnel)
-git push classroom votre-nom/votre-feature
+# 3. Push régulier vers origin (optionnel)
+git push origin votre-nom/votre-feature
 ```
 
 ### Avant de créer une Pull Request
@@ -62,14 +62,14 @@ git push classroom votre-nom/votre-feature
 ```bash
 # 1. Sync avec main (au cas où quelqu'un a mergé)
 git checkout main
-git pull classroom main
+git pull origin main
 
 # 2. Rebase votre feature sur main à jour
 git checkout votre-nom/votre-feature
 git rebase main
 
-# 3. Push vers classroom pour la PR
-git push classroom votre-nom/votre-feature
+# 3. Push vers origin pour la PR
+git push origin votre-nom/votre-feature
 ```
 
 ### Après le merge d'une PR
@@ -77,7 +77,7 @@ git push classroom votre-nom/votre-feature
 ```bash
 # 1. Mettre à jour votre main local
 git checkout main
-git pull classroom main
+git pull origin main
 
 # 2. Supprimer votre branche feature locale (si terminée)
 git branch -d votre-nom/votre-feature
