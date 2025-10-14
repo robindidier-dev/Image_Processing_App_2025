@@ -10,7 +10,9 @@
     Le contrôleur MainController gère les interactions utilisateur
 -->
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="imageprocessingapp.controller.MainController">
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" 
+            xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="imageprocessingapp.controller.MainController">
     
     <!-- ZONE SUPÉRIEURE : Barre de menu -->
     <top>
@@ -31,10 +33,19 @@
     <left>
         <!-- VBox pour organiser les outils verticalement -->
         <!-- il faudra ajouter les outils de dessin (PaintTool, PickerTool) -->
-        <VBox fx:id="toolbar" spacing="10">
+        <!-- Style proche de celui de MenuBar -->
+        <VBox fx:id="toolbar" spacing="10" style="
+        -fx-background-color: linear-gradient(to bottom, #f0f0f0, #e5e5e5); 
+        -fx-border-color: #c0c0c0; 
+        -fx-border-width: 0 1 0 0;
+        ">
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
+            <!-- Ajout de quelques boutons pour visualiser le rendu -->
+            <Button text="1" prefWidth="10"/>
+            <Button text="2" prefWidth="10"/>
+            <Button text="3" prefWidth="10"/>
         </VBox>
     </left>
     

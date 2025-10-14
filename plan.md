@@ -1,4 +1,3 @@
-<!-- 2fbedac6-b804-4a5c-9f2b-b473e229800f 1c71c9ef-4936-4db2-a62b-645fefea0660 -->
 # Plan de développement - Image Processing App
 
 ## Structure du projet
