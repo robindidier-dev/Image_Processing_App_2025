@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import imageprocessingapp.view.components.ColorDisplay?>
+
+<!--
+    Widget de sélection de la couleur
+    Architecture MVC : ce fichier FXML représente la View
+    Le contrôleur ColorPickerDialogController gère les interactions utilisateur
+    On utilise ici un GridPane et non AnchorPane, ce dernier plus destiné aux éléments racines
+    comme la MainView.
+-->
+
+<GridPane styleClass="root-pane"
+          xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="imageprocessingapp.controller.ColorPickerDialogController"
+          prefHeight="100.0" prefWidth="300.0"
+          stylesheets="@../style/ColorPickerDialog.css">
+
+    <!--
+        Layout choisi :
+        Gauche : ColorDisplay (VBox avec rectangle et hexa en dessous). (40% de la largeur)
+        Droite : ColorPicker en haut et boutons Cancel / Ok en bas. (60% de la largeur)
+     -->
+
+    <columnConstraints>
+        <ColumnConstraints percentWidth="40" halignment="CENTER"/>
+        <ColumnConstraints percentWidth="60" halignment="CENTER"/>
+    </columnConstraints>
+
+    <rowConstraints>
+        <RowConstraints percentHeight="50"/>
+        <RowConstraints percentHeight="50"/>
+    </rowConstraints>
+
+
+    <ColorPicker fx:id="colorPicker" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+    <ColorDisplay fx:id="colorDisplay" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                  GridPane.rowSpan="2"/>
+
+
+    <HBox GridPane.rowIndex="1" GridPane.columnIndex="1"
+          alignment="BOTTOM_CENTER"
+          styleClass="hbox">
+        <Button fx:id="cancelButton" text="Cancel"/>
+        <Button fx:id="okButton" text="Ok"/>
+    </HBox>
+
+</GridPane>

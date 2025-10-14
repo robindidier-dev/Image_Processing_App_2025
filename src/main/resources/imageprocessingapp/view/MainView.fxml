@@ -10,8 +10,9 @@
     Le contrôleur MainController gère les interactions utilisateur
 -->
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" 
-            xmlns:fx="http://javafx.com/fxml/1" 
+<?import imageprocessingapp.view.components.ColorPickerDialog?>
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="imageprocessingapp.controller.MainController">
     
     <!-- ZONE SUPÉRIEURE : Barre de menu -->

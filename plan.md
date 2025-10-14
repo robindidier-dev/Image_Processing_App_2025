@@ -147,7 +147,7 @@ Feature complète répartie par couche MVC.
 
 - [X] Supprimer le package teamteacher et mettre à jour module-info.java
 - [X] Créer MainApp.java, MainController.java et MainView.fxml avec menu/toolbar/imageview
-- [ ] Implémenter le système de couleur (ColorDisplay widget, ColorPickerDialog, property)
+- [x] Implémenter le système de couleur (ColorDisplay widget, ColorPickerDialog, property)
 - [ ] Créer Tool interface, PaintTool, PickerTool et ToolSelector widget
 - [X] Ajouter menu File avec Open et Save image
 - [ ] Implémenter KdTree avec Point2D, insertion et recherche plus proche voisin

@@ -5,11 +5,13 @@ module imageprocessingapp {
     requires javafx.graphics; // Pour le rendu graphique
     requires java.desktop; // Pour les fonctionnalités desktop (AWT/Swing)  
     requires java.rmi; // Pour Java RMI (Remote Method Invocation)
-    requires javafx.swing; // Pour l'interopérabilité JavaFX-Swing
+    requires javafx.swing;
+    requires jdk.compiler;
 
     // Packages exportés et ouverts
     exports imageprocessingapp; // Package principal accessible aux autres modules
     exports imageprocessingapp.model.tools; // Package des outils accessible aux autres modules
+    exports imageprocessingapp.view.components;
     opens imageprocessingapp.view to javafx.fxml; // Ouvert à javafx.fxml pour l'injection de dépendances
     opens imageprocessingapp.controller to javafx.fxml; // Ouvert à javafx.fxml pour l'injection de dépendances
 }
