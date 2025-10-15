@@ -17,56 +17,81 @@ REMOTE origin
 
 ## Commandes essentielles
 
-`git fetch` - Télécharger SANS modifier
-
-`git pull` - Télécharger ET appliquer
-
-`git rebase` - Rejouer vos commits sur une nouvelle base
-
-`git merge` - Fusionner deux branches
+- `git fetch` - Télécharger SANS modifier
+- `git pull` - Télécharger ET appliquer  
+- `git merge` - Fusionner deux branches
+- `git branch` - Lister/créer des branches
+- `git checkout` - Changer de branche
+- `git status` - Voir l'état du repo
 
 ## Workflow 
 
-- **Pendant le dev (petits commits, rebase régulier, pas de merge)**
-  ```bash
-  # travailler sur votre branche
-  git checkout votre-nom/votre-feature
+### Début de session, création d'une branche
+
+```bash
+# 1. Récupérer les dernières modifs
+git fetch origin
+git checkout main
+git pull origin main
+
+# 2. Créer une nouvelle branche
+git checkout -b votre-nom/nouvelle-feature
+```
+
+### Pendant le dev (petits commits, merge régulier pour se mettre à jour)
+
+```bash
+# travailler sur votre branche
+git checkout votre-nom/votre-feature
   
-  # commit régulier
-  git add .
-  git commit -m "message clair"
+# commit régulier
+git add .
+git commit -m "message clair"
 
-  # se remettre à jour proprement avec les features des autres
-  git fetch origin
-  git rebase origin/main
+# se remettre à jour avec les features des autres (via merge)
+git fetch origin
+git merge origin/main
 
-  # push sur votre branche distante (optionnel)
-  git push origin votre-nom/votre-feature
-  ```
+# push sur votre branche distante (optionnel)
+git push origin votre-nom/votre-feature
+```
 
-- **Avant la PR**
-  ```bash
-  git fetch origin # télécharger les dernière modif du remote
-  git checkout votre-nom/votre-feature
-  git rebase origin/main # comparer main avec sa branche 
-  # s'il y a des conflits: éditer → git add fichier.edité → git rebase --continue (jusqu'a qu'il n'y ait pu de conflit)
+### Avant la PR
 
-  # après rebase, pousser en protégé (rebase implique une réecriture de l'historique d'où le "force)
-  git push --force-with-lease origin votre-nom/votre-feature
-  ```
-  - Créez la PR vers `main`. La PR ne doit montrer que vos commits.
-  - Si c’est la PR provoque peu de conflits: bouton “Resolve conflicts” dans GitHub.
+```bash
+git fetch origin # télécharger les dernière modif du remote
+git checkout votre-nom/votre-feature
+git merge origin/main # intégrer main dans sa branche
 
+# s'il y a des conflits: éditer → git add fichier.edité → git commit
 
-- **Après merge de la PR**
+# pousser normalement (pas de force nécessaire avec merge)
+git push origin votre-nom/votre-feature
+```
+#### En cas de problème
+- **Merge raté** : `git merge --abort`
+- **Branche cassée** : `git checkout main && git checkout -b nouvelle-branche`
+- **Push refusé** : vérifier qu'on est sur la bonne branche
+
+### Après merge de la PR
+
   ```bash
   git checkout main 
   git pull origin main # mettre a jour main en local
-  git branch -d votre-nom/votre-feature #(delete la branche local de travail si feature terminé (optionnel))
-  # supprimer la branche distante dans l’UI GitHub (optionnel)
+
+  git branch -d votre-nom/votre-feature # delete la branche local de travail si feature terminé
+  git branch -D nom-de-la-branche
+  # pour forcer la suppression (même si pas mergée)
+
+  # supprimer la branche distante
+  git push origin --delete votre-nom/votre-feature
+  # supprime la branche distante (ou passé par l'UI GitHub)
+
+  git fetch --prune origin # pour mettre a jour les branches distantes existantes
   ```
 
-### Vérifs rapides (utile à tous)
+## Vérifs rapides 
+
 ```bash
 # voir l'etat de vos branches de travail
 git log --oneline --graph
