@@ -6,6 +6,7 @@ module imageprocessingapp {
     requires java.desktop; // Pour les fonctionnalités desktop (AWT/Swing)  
     requires java.rmi; // Pour Java RMI (Remote Method Invocation)
     requires javafx.swing;
+    requires javafx.base; // Pour l'interopérabilité JavaFX-Swing
     requires jdk.compiler;
 
     // Packages exportés et ouverts

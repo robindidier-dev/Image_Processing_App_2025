@@ -3,8 +3,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
 
-<!-- 
+<!--
     Interface principale de l'application de traitement d'image
     Architecture MVC : ce fichier FXML représente la View
     Le contrôleur MainController gère les interactions utilisateur
@@ -14,7 +15,6 @@
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="imageprocessingapp.controller.MainController">
-    
     <!-- ZONE SUPÉRIEURE : Barre de menu -->
     <top>
         <MenuBar>
@@ -29,27 +29,81 @@
             <Menu text="Filters"/>
         </MenuBar>
     </top>
-    
+
     <!-- ZONE GAUCHE : Barre d'outils -->
     <left>
         <!-- VBox pour organiser les outils verticalement -->
         <!-- il faudra ajouter les outils de dessin (PaintTool, PickerTool) -->
-        <!-- Style proche de celui de MenuBar -->
-        <VBox fx:id="toolbar" spacing="10" style="
-        -fx-background-color: linear-gradient(to bottom, #f0f0f0, #e5e5e5); 
-        -fx-border-color: #c0c0c0; 
-        -fx-border-width: 0 1 0 0;
-        ">
+        <VBox alignment="CENTER" fx:id="toolbar" spacing="10" style="-fx-border-color: gray; -fx-border-width: 0 1 0 0;">
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <!-- Ajout de quelques boutons pour visualiser le rendu -->
-            <Button text="1" prefWidth="10"/>
-            <Button text="2" prefWidth="10"/>
-            <Button text="3" prefWidth="10"/>
+
+
+            <!-- Sliders à remplacer par le ColorPicker de Robin ; sliders inutiles pour l'instant -->
+
+            <Slider fx:id="sliderRed"
+                    blockIncrement="1" majorTickUnit="50"
+                    min="1" max="255" value="1"
+                    minorTickCount="1" showTickLabels="true" showTickMarks="true"
+                    style="
+                    -fx-base: #ff0000;
+                    -fx-tick-label-fill: #ff0000;
+                    -fx-pref-height: 20px;
+                    -fx-background-radius: 10;"/>
+            <Slider fx:id="sliderGreen"
+                    blockIncrement="1" majorTickUnit="50"
+                    min="1" max="255" value="1"
+                    minorTickCount="1" showTickLabels="true" showTickMarks="true"
+                    style="
+                    -fx-base: #00ff00;
+                    -fx-tick-label-fill: black;
+                    -fx-pref-height: 20px;
+                    -fx-background-radius: 10;"/>
+            <Slider fx:id="sliderBlue"
+                    blockIncrement="1" majorTickUnit="50"
+                    min="1" max="255" value="1"
+                    minorTickCount="1" showTickLabels="true" showTickMarks="true"
+                    style="
+                    -fx-base: #0000ff;
+                    -fx-tick-label-fill: black;
+                    -fx-pref-height: 20px;
+                    -fx-background-radius: 10;"/>
+            <Slider fx:id="sliderGreen2"
+                    blockIncrement="1" majorTickUnit="50"
+                    min="1" max="255" value="1"
+                    minorTickCount="1" showTickLabels="true" showTickMarks="true"
+                    style="
+                    -fx-base: #00ff00;
+                    -fx-tick-label-fill: black;
+                    -fx-pref-height: 20px;
+                    -fx-background-radius: 10;"/>
+<!--            <Canvas fx:id="colorSquare"
+                    width="100" height="100"/>-->
+            <ToggleButton fx:id="pinceauButton" onAction="#onPinceauSelected" prefWidth="32" prefHeight="32" minWidth="32" minHeight="32" maxWidth="32" maxHeight="32">
+                <graphic>
+                    <ImageView fx:id="pinceauImageView" fitWidth="32" fitHeight="32" preserveRatio="true">
+                        <image>
+                            <Image url="@../image/pinceau.png"/>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </ToggleButton>
+
+            <ToggleButton fx:id="pipetteButton" onAction="#onPipetteSelected" prefWidth="32" prefHeight="32" minWidth="32" minHeight="32" maxWidth="32" maxHeight="32">
+                <graphic>
+                    <ImageView fx:id="pipetteImageView" fitWidth="24" fitHeight="24" preserveRatio="true">
+                        <image>
+                            <Image url="@../image/pipette.png"/>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </ToggleButton>
+
         </VBox>
+
     </left>
-    
+
     <!-- ZONE CENTRALE : Zone d'affichage de l'image -->
     <center>
         <!-- StackPane permet d'empiler plusieurs composants -->
@@ -60,5 +114,5 @@
             <ImageView fx:id="imageView" fitWidth="800" fitHeight="600" preserveRatio="true"/>
         </StackPane>
     </center>
-    
+
 </BorderPane>

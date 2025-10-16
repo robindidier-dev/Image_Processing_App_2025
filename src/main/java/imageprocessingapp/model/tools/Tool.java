@@ -6,7 +6,7 @@ import imageprocessingapp.model.ImageModel;
 /**
  * Interface définissant le contrat pour tous les outils de dessin de l'application.
  * 
- * Cette interface permett d'implémenter différents outils de dessin
+ * Cette interface permet d'implémenter différents outils de dessin
  * (pinceau, pipette, gomme, etc.) de manière interchangeable.
  * 
  * Chaque outil doit gérer les événements de souris et interagir avec l'ImageModel
