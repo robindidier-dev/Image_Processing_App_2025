@@ -1,6 +1,5 @@
 package imageprocessingapp;
 
-import imageprocessingapp.view.components.ColorPickerDialog;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -19,19 +18,44 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // Charger l'interface utilisateur depuis le fichier FXML
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/imageprocessingapp/view/MainView.fxml"));
         Parent root = loader.load();
+        
+        // Récupérer le contrôleur associé à la vue
         MainController controller = loader.getController();
 
-        primaryStage.setScene(new Scene(root));
+        // Configurer et afficher la fenêtre principale
+        Scene scene = new Scene(root);
+        primaryStage.setScene(scene);
         primaryStage.setTitle("Image Processing App");
+        primaryStage.setMinWidth(1000);
+        primaryStage.setMinHeight(700);
+        
+        // Configurer les raccourcis clavier au niveau de la scène
+        setupGlobalKeyboardShortcuts(scene, controller);
+        
         primaryStage.show();
 
+        // S'assurer que les gestionnaires d'événements sont configurés après l'affichage
+        javafx.application.Platform.runLater(() -> {
+            controller.setupWindowCloseHandler();
+        });
+    }
 
-        // (PROVISOIRE) Ouvre une fenêtre de choix de la couleur
-        // (PROVISOIRE) au démarrage de l'application
-        ColorPickerDialog dialogStage = new ColorPickerDialog();
-        dialogStage.show(controller, primaryStage);
+    /**
+     * Configure les raccourcis clavier globaux de l'application.
+     * 
+     * @param scene La scène principale
+     * @param controller Le contrôleur principal
+     */
+    private void setupGlobalKeyboardShortcuts(Scene scene, MainController controller) {
+        scene.setOnKeyPressed(event -> {
+            if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.S) {
+                controller.saveImage();
+                event.consume();
+            }
+        });
     }
 
     public static void main(String[] args) {

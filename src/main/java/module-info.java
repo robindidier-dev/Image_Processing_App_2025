@@ -7,12 +7,16 @@ module imageprocessingapp {
     requires java.rmi; // Pour Java RMI (Remote Method Invocation)
     requires javafx.swing;
     requires javafx.base; // Pour l'interopérabilité JavaFX-Swing
-    requires jdk.compiler;
 
     // Packages exportés et ouverts
     exports imageprocessingapp; // Package principal accessible aux autres modules
+    exports imageprocessingapp.model; // Package du modèle accessible aux autres modules
     exports imageprocessingapp.model.tools; // Package des outils accessible aux autres modules
-    exports imageprocessingapp.view.components;
-    opens imageprocessingapp.view to javafx.fxml; // Ouvert à javafx.fxml pour l'injection de dépendances
-    opens imageprocessingapp.controller to javafx.fxml; // Ouvert à javafx.fxml pour l'injection de dépendances
+    exports imageprocessingapp.view.components; // Package des composants d'interface
+    exports imageprocessingapp.controller; // Package des contrôleurs
+    
+    // Ouvert à javafx.fxml pour l'injection de dépendances
+    opens imageprocessingapp.view to javafx.fxml;
+    opens imageprocessingapp.controller to javafx.fxml;
+    opens imageprocessingapp.dialogs to javafx.fxml;
 }

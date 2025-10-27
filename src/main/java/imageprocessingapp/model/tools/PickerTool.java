@@ -2,41 +2,71 @@ package imageprocessingapp.model.tools;
 
 import imageprocessingapp.model.ImageModel;
 import javafx.beans.property.ObjectProperty;
-import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.WritableImage;
 
+/**
+ * Outil pipette pour sélectionner une couleur depuis l'image.
+ * 
+ * Cet outil permet à l'utilisateur de cliquer sur un pixel de l'image
+ * pour récupérer sa couleur et la définir comme couleur active.
+ * 
+ * Pattern Strategy : implémente l'interface Tool pour le comportement pipette.
+ */
 public class PickerTool implements Tool {
 
     /**
-     * Permet de récupérer la couleur du pixel sous la souris.
+     * ImageView sur laquelle lire la couleur des pixels.
+     * Utilisée pour accéder à l'image et lire les couleurs des pixels.
      */
+    private final ImageView imageView;
 
-    private ImageView imageView;
-    private ObjectProperty<Color> selectedColor;
+    /**
+     * Canvas sur lequel dessiner.
+     * Utilisé pour accéder au canvas et dessiner sur l'image.
+     */
+    private final Canvas drawingCanvas;
+    
+    /**
+     * Propriété observable contenant la couleur sélectionnée.
+     * Cette propriété sera liée à la couleur active dans MainController.
+     */
+    private final ObjectProperty<Color> selectedColor;
 
-
-    //le constructeur prend l'imageView sur laquelle lire la couleur, et la variable selectedColor qu'on va mettre à jour
-    public PickerTool(ImageView imageView, ObjectProperty<Color> selectedColor) {
+    /**
+     * Constructeur de l'outil pipette.
+     * 
+     * @param imageView L'ImageView sur laquelle lire la couleur des pixels
+     * @param selectedColor La propriété observable contenant la couleur sélectionnée
+     */
+    public PickerTool(ImageView imageView, Canvas drawingCanvas, ObjectProperty<Color> selectedColor) {
         this.imageView = imageView;
+        this.drawingCanvas = drawingCanvas;
         this.selectedColor = selectedColor;
     }
 
-
+    /**
+     * Gère le clic de souris pour sélectionner une couleur.
+     * 
+     * @param event L'événement de souris contenant les coordonnées du clic
+     * @param imageModel Le modèle de l'image (non utilisé pour cet outil)
+     */
     @Override
     public void onMousePressed(MouseEvent event, ImageModel imageModel) {
+        // Première étape : récupération des coordonnées de l'endroit où l'on clique
+        int x = (int) event.getX();
+        int y = (int) event.getY();
 
         // On récupère l'image
         Image image = imageView.getImage();
 
         if (image != null) {
-            // Première étape : récupération des coordonnées de l'endroit où l'on clique
-            int x = (int) event.getX();
-            int y = (int) event.getY();
-
             // Deuxième étape : on veut récupérer la couleur de cet endroit
             // On utilise PixelReader
             PixelReader reader = image.getPixelReader();
@@ -44,12 +74,38 @@ public class PickerTool implements Tool {
                 Color color = reader.getColor(x, y);
                 selectedColor.set(color); //méthode de la classe ObjectProperty
                 // met à jour la valeur et notifient tous les listeners liés à cette propriété
+                return;
             }
         }
 
-
+        // si pas d'image, lire depuis le canvas
+        if (drawingCanvas != null) {
+            Color color = readColorFromCanvas(x, y);
+            if (color != null) {
+                selectedColor.set(color);
+            }
+        }
     }
 
+    /**
+     * Lit une couleur depuis le Canvas à la position donnée.
+     */
+    private Color readColorFromCanvas(int x, int y) {
+        try {
+            // Capturer le contenu du canvas comme image
+            WritableImage snapshot = drawingCanvas.snapshot(null, null);
+            
+            // Vérifier les limites
+            if (x >= 0 && y >= 0 && x < snapshot.getWidth() && y < snapshot.getHeight()) {
+                PixelReader reader = snapshot.getPixelReader();
+                return reader.getColor(x, y);
+            }
+            return null;
+        } catch (Exception e) {
+            System.out.println("Erreur lors de la lecture du canvas : " + e.getMessage());
+            return null;
+        }
+    }
 
     //Avec la pipette, les méthodes onMouseDragged et onMouseReleased sont inutiles :
     //La seule action sera le clic sur un pixel de l'image.

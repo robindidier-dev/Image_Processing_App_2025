@@ -1,32 +1,4 @@
-# Plan de développement - Image Processing App
-
-## Structure du projet
-
-```
-src/main/java/imageprocessingapp/
-├── MainApp.java                  # Point d'entrée de l'application
-├── model/                        # Logique métier et données
-│  ├── ImageModel.java            # Modèle principal de l'image
-│  ├── ColorUtils.java            # Utilitaires pour les couleurs
-│  ├── tools/                     # Outils de dessin
-│  │  └── Tool.java               # Interface des outils
-│  ├── filters/                   # Filtres/effets (mosaïque, seam carving)
-│  └── structures/                # Structures de données (KdTree)
-├── view/                         # Composants d'interface utilisateur
-│  └── components/                # Widgets réutilisables
-└── controller/                   # Logique de contrôle
-   ├── MainController.java        # Contrôleur principal
-   └── tool/                      # Contrôleurs des outils
-
-src/main/resources/imageprocessingapp/
-├── view/                      
-│  └── MainView.fxml              # Interface principale (FXML)
-└── dialogs/                      # Fenêtres de dialogue
-
-src/test/java/imageprocessingapp/
-├── model/                        # Tests unitaires du model
-└── integration/                  # Tests d'intégration
-```
+# Plan de développement 
 
 ## Répartition des tâches
 
@@ -145,11 +117,11 @@ Feature complète répartie par couche MVC.
 
 ### To-dos
 
-- [X] Supprimer le package teamteacher et mettre à jour module-info.java
-- [X] Créer MainApp.java, MainController.java et MainView.fxml avec menu/toolbar/imageview
+- [x] Supprimer le package teamteacher et mettre à jour module-info.java
+- [x] Créer MainApp.java, MainController.java et MainView.fxml avec menu/toolbar/imageview
 - [x] Implémenter le système de couleur (ColorDisplay widget, ColorPickerDialog, property)
-- [ ] Créer Tool interface, PaintTool, PickerTool et ToolSelector widget
-- [X] Ajouter menu File avec Open et Save image
+- [x] Créer Tool interface, PaintTool, PickerTool et ToolSelector widget
+- [x] Ajouter menu File avec Open et Save image
 - [ ] Implémenter KdTree avec Point2D, insertion et recherche plus proche voisin
 - [ ] Créer MosaicFilter utilisant KdTree pour effet mosaïque
 - [ ] Ajouter MosaicDialog et entrée menu Filter > Mosaic Effect

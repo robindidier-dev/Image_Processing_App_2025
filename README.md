@@ -17,14 +17,21 @@ src/main/java/imageprocessingapp/
 │  ├── ImageModel.java            # Modèle principal de l'image
 │  ├── ColorUtils.java            # Utilitaires pour les couleurs
 │  ├── tools/                     # Outils de dessin
-│  │  └── Tool.java               # Interface des outils
+│  │  ├── Tool.java               # Interface des outils
+│  │  ├── PaintTool.java
+│  │  └── PickerTool.java     
+│  ├── ColorUtils.java 
 │  ├── filters/                   # Filtres/effets (mosaïque, seam carving)
 │  └── structures/                # Structures de données (KdTree)
 ├── view/                         # Composants d'interface utilisateur
 │  └── components/                # Widgets réutilisables
-└── controller/                   # Logique de contrôle
-   ├── MainController.java        # Contrôleur principal
-   └── tool/                      # Contrôleurs des outils
+│     └── ColorDisplay.java
+├── controller/                      # Logique de contrôle
+│  ├── MainController.java           # Contrôleur principal
+│  ├── ToolSelectorController.java        # Contient la logique ToggleGroup
+│  └── ColorPickerDialogController.java   # Contient la logique d'affichage
+└── service/
+   └── DrawingService.java
 
 src/main/resources/imageprocessingapp/
 ├── view/                        
@@ -40,16 +47,65 @@ src/test/java/imageprocessingapp/
 Cette structure suit les **bonnes pratiques JavaFX** et les principes de développement logiciel :
 
 #### **Séparation des responsabilités (MVC)**
-- **Model** (`model/`) : Contient la logique métier pure, indépendante de l'interface
-- **View** (`view/` + FXML) : Interface utilisateur déclarative avec FXML pour la séparation UI/logique
-- **Controller** (`controller/`) : Gère les interactions utilisateur et fait le lien Model ↔ View
+
+Le pattern **Model-View-Controller** organise le code selon trois responsabilités distinctes :
+
+##### **`model/` - Logique métier**
+- **Données persistantes** : Images, couleurs, états d'application
+- **Règles métier** : Calculs, transformations, validations
+- **Logique pure** : Indépendante de l'interface utilisateur
+- **Réutilisabilité** : Peut être testé et utilisé sans UI
+
+##### **`view/` + FXML - Interface utilisateur**
+- **Composants visuels** : Boutons, labels, canvas
+- **Layout et style** : Positionnement, CSS, FXML
+- **Widgets réutilisables** : Composants personnalisés
+- **Présentation** : Comment les données sont affichées
+
+##### **`controller/` - Coordination**
+- **Interactions utilisateur** : Clics, saisies, événements
+- **Coordination** : Fait le lien entre Model et View
+- **État de l'interface** : Gestion des boutons, sélections
+- **Logique de contrôle** : Quand et comment réagir
+
+##### **`service/` - Logique technique**
+- **Opérations complexes** : Manipulation de canvas, composition d'images
+- **Logique technique** : Pas métier, pas UI, mais nécessaire
+- **Réutilisabilité** : Peut être utilisé par plusieurs contrôleurs
 
 
-**Organisation des ressources**
+#### **Flux de données MVC**
+
+```
+┌─────────────┐    Événements     ┌─────────────┐    Appels méthodes    ┌─────────────┐
+│    VIEW     │ ────────────────► │ CONTROLLER  │ ────────────────────► │    MODEL    │
+│ (FXML/Java) │                   │             │                       │             │
+└─────────────┘                   └─────────────┘                       └─────────────┘
+       ▲                                 │                                       │
+       │         Binding/Updates         │              Données                  │
+       └─────────────────────────────────┴───────────────────────────────────────┘
+```
+
+
+#### **Organisation des ressources**
 - `src/main/resources/` séparé de `src/main/java/` pour les fichiers non-compilés
 - FXML, images, CSS dans les ressources
 - Code Java compilé dans `src/main/java/`
 
+#### **Décisions architecturales du projet**
+
+**Pourquoi cette structure ?**
+
+1. **Séparation claire des responsabilités** : Chaque classe a un rôle précis
+2. **Réutilisabilité** : Les modèles peuvent être testés indépendamment
+3. **Maintenabilité** : Modifications isolées dans chaque couche
+4. **Évolutivité** : Facile d'ajouter de nouveaux outils ou filtres
+
+**Choix techniques :**
+- **JavaFX Properties** : Binding automatique entre Model et View
+- **FXML** : Séparation UI/logique pour faciliter les modifications
+- **Service Layer** : Logique technique réutilisable (`DrawingService`)
+- **Interface Tool** : Polymorphisme pour les outils de dessin
 
 ### Composants principaux
 
@@ -57,6 +113,8 @@ Cette structure suit les **bonnes pratiques JavaFX** et les principes de dévelo
 - **MainController** : Gère les interactions utilisateur et coordonne les composants
 - **ImageModel** : Représente une image modifiable avec accès aux pixels
 - **MainView.fxml** : Interface utilisateur avec menu, toolbar et zone d'image
+- **DrawingService** : Gère les opérations sur le canvas de dessin
+- **ToolSelectorController** : Gère la sélection des outils (ToggleGroup)
 
 ##  Comment lancer
 

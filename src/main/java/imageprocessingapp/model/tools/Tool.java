@@ -15,9 +15,10 @@ import imageprocessingapp.model.ImageModel;
 
 public interface Tool {
     
-    void onMousePressed(MouseEvent event, ImageModel imageModel);
-    void onMouseDragged(MouseEvent event, ImageModel imageModel);
-    void onMouseReleased(MouseEvent event, ImageModel imageModel);
+    public void onMousePressed(MouseEvent event, ImageModel imageModel);
+    public void onMouseDragged(MouseEvent event, ImageModel imageModel);
+    public void onMouseReleased(MouseEvent event, ImageModel imageModel);
 
     String getName(); // Retourne le nom de l'outil (ex: "Pinceau", "Pipette", "Gomme")
+
 }

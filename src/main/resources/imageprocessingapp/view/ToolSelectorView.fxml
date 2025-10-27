@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+<?import imageprocessingapp.view.components.ColorDisplay?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1"
+     xmlns:fx="http://javafx.com/fxml/1"
+     fx:controller="imageprocessingapp.controller.ToolSelectorController"
+     alignment="TOP_CENTER" fx:id="toolbar" spacing="10" prefWidth="70" 
+     styleClass="toolbar"
+     stylesheets="@../style/ToolBar.css"
+     VBox.vgrow="ALWAYS">
+    
+    <padding>
+        <Insets top="20" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <ToggleButton fx:id="pinceauButton" onAction="#pinceauPressed" 
+    prefWidth="32" prefHeight="32" minWidth="32" minHeight="32" maxWidth="32" maxHeight="32"
+    styleClass="tool-button">
+        <graphic>
+            <ImageView fx:id="pinceauImageView" fitWidth="32" fitHeight="32" preserveRatio="true">
+                <image>
+                    <Image url="@../image/pinceau.png"/>
+                </image>
+            </ImageView>
+        </graphic>
+    </ToggleButton>
+    
+    <ToggleButton fx:id="pipetteButton" onAction="#pipettePressed" 
+    prefWidth="32" prefHeight="32" minWidth="32" minHeight="32" maxWidth="32" maxHeight="32"
+    styleClass="tool-button">
+        <graphic>
+            <ImageView fx:id="pipetteImageView" fitWidth="24" fitHeight="24" preserveRatio="true">
+                <image>
+                    <Image url="@../image/pipette.png"/>
+                </image>
+            </ImageView>
+        </graphic>
+    </ToggleButton>
+
+    <!-- Ajouter ColorDisplay dans la toolbar -->
+    <ColorDisplay fx:id="colorDisplay"/>
+
+    <!-- Ajouter un spacer pour pousser le trait vers le bas -->
+    <Region VBox.vgrow="ALWAYS"/>
+</VBox>
