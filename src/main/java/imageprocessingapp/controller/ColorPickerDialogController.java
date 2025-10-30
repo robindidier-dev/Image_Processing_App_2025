@@ -42,8 +42,8 @@ public class ColorPickerDialogController {
         dialogStage.initStyle(StageStyle.UNDECORATED);
 
         // Position du widget sur la fenêtre
-        dialogStage.setX(300);
-        dialogStage.setY(200);
+        dialogStage.setX(270);
+        dialogStage.setY(260);
 
         // L'apparition de la fenêtre bloque l'interaction avec d'autres éléments de l'application
         dialogStage.initModality(Modality.APPLICATION_MODAL);

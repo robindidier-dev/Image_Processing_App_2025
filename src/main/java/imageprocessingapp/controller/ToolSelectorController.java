@@ -1,6 +1,7 @@
 package imageprocessingapp.controller;
 
 // Custom imports
+import imageprocessingapp.model.tools.EraseTool;
 import imageprocessingapp.view.components.ColorDisplay;
 import imageprocessingapp.model.tools.PaintTool;
 import imageprocessingapp.model.tools.PickerTool;
@@ -10,9 +11,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 
 /**
@@ -47,7 +50,14 @@ public class ToolSelectorController {
      */
     @FXML
     private ImageView pipetteImageView;
-    
+
+    /**
+     * ImageView pour l'icône de la gomme.
+     * Affiche l'icône de la gomme dans le bouton.
+     */
+    @FXML
+    private ImageView gommeImageView;
+
     /**
      * Bouton toggle pour sélectionner l'outil pinceau.
      * Permet d'activer/désactiver l'outil pinceau.
@@ -63,11 +73,24 @@ public class ToolSelectorController {
     private ToggleButton pipetteButton;
 
     /**
+     * Bouton toggle pour sélectionner l'outil gomme.
+     * Permet d'activer/désactiver l'outil gomme.
+     */
+    @FXML
+    private ToggleButton gommeButton;
+
+    /**
      * ColorDisplay pour afficher la couleur sélectionnée.
      * Utilisé pour afficher la couleur sélectionnée dans le ColorDisplay.
      */
     @FXML
     private ColorDisplay colorDisplay;
+
+    /**
+     * Slider pour choisir la taille de pinceau.
+     */
+    @FXML
+    private Slider brushSizeSlider;
 
     // ===== RÉFÉRENCES EXTERNES =====
     
@@ -94,6 +117,12 @@ public class ToolSelectorController {
      * Utilisé pour créer le groupe de boutons d'outils.
      */
     private ToggleGroup toolGroup;
+
+    /**
+     * Pinceau.
+     * Utilisé pour accéder à la méthode setBrushSize().
+     */
+    private PaintTool paintTool;
 
     // ===== MÉTHODES DE CONFIGURATION =====
     
@@ -133,6 +162,16 @@ public class ToolSelectorController {
         return colorDisplay;
     }
 
+    /**
+     * Retourne le Pinceau.
+     *
+     * @return Le PaintTool
+     */
+    public void setPaintTool(PaintTool tool) {
+        this.paintTool = tool;
+    }
+
+
     // ===== INITIALISATION =====
     
     /**
@@ -160,6 +199,9 @@ public class ToolSelectorController {
         
         // Gérer la sélection de la pipette
         pipetteButton.setOnAction(this::pipettePressed);
+
+        // Gérer la sélection de la gomme
+        gommeButton.setOnAction(this::gommePressed);
     }
 
     /**
@@ -169,6 +211,7 @@ public class ToolSelectorController {
         toolGroup = new ToggleGroup();
         pinceauButton.setToggleGroup(toolGroup);
         pipetteButton.setToggleGroup(toolGroup);
+        gommeButton.setToggleGroup(toolGroup);
         
         // Listener pour la désélection
         toolGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
@@ -190,10 +233,16 @@ public class ToolSelectorController {
             if (mainController != null && drawingCanvas != null) {
                 // Créer et configurer l'outil pinceau
                 GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
-                PaintTool paintTool = new PaintTool(gc);
+                paintTool = new PaintTool(gc);
                 
                 // Définir la couleur du pinceau depuis le contrôleur principal
                 paintTool.setPaintColor(mainController.selectedColorProperty().get());
+
+                // Equivalent de la méthode brushSizeChanged mais à l'initialisation
+                double brushSize = brushSizeSlider.getValue();
+                if (this.paintTool != null) {
+                    this.paintTool.setBrushSize(brushSize);
+                }
 
                 // Configurer le callback de modification
                 paintTool.setOnModificationCallback(() -> mainController.markCanvasAsModified());
@@ -202,6 +251,27 @@ public class ToolSelectorController {
                 mainController.activeToolProperty().set(paintTool);
             }
         } 
+    }
+
+    /**
+     * Active l'outil gomme lorsque le bouton est pressé.
+     *
+     * @param event L'événement du bouton
+     */
+    public void gommePressed(ActionEvent event) {
+        if (gommeButton.isSelected()) {
+            if (mainController != null && drawingCanvas != null) {
+                // Créer et configurer l'outil pinceau
+                GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
+                EraseTool eraseTool = new EraseTool(gc);
+
+                // Configurer le callback de modification
+                eraseTool.setOnModificationCallback(() -> mainController.markCanvasAsModified());
+
+                // Activer l'outil dans le contrôleur principal
+                mainController.activeToolProperty().set(eraseTool);
+            }
+        }
     }
 
     /**
@@ -220,4 +290,12 @@ public class ToolSelectorController {
             }
         }
     }
+
+    public void brushSizeChanged(MouseEvent mouseEvent) {
+        double brushSize = brushSizeSlider.getValue();
+        if (this.paintTool != null) {
+            this.paintTool.setBrushSize(brushSize);
+        }
+    }
+
 }

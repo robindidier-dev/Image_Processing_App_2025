@@ -60,19 +60,32 @@ public class PickerTool implements Tool {
     @Override
     public void onMousePressed(MouseEvent event, ImageModel imageModel) {
         // Première étape : récupération des coordonnées de l'endroit où l'on clique
-        int x = (int) event.getX();
-        int y = (int) event.getY();
 
         // On récupère l'image
         Image image = imageView.getImage();
 
+        // Vérification que l'image n'est pas nulle
         if (image != null) {
+            // Cependant, il faut convertir les coordonnées du clic souris à la vraie échelle de l'image affichée.
+            // -> nécessaire si l'image affichée est redimensionnée dans l'ImageView par rapport à sa taille originale.
+
+            double viewWidth = imageView.getBoundsInParent().getWidth();
+            double viewHeight = imageView.getBoundsInParent().getHeight();
+            double imageWidth = image.getWidth();
+            double imageHeight = image.getHeight();
+
+            double scaleX = imageWidth / viewWidth;
+            double scaleY = imageHeight / viewHeight;
+
+            int imageX = (int) (event.getX() * scaleX); // peut-être différent de event.getX() si l'image est redimensionnée
+            int imageY = (int) (event.getY() * scaleY);
+
             // Deuxième étape : on veut récupérer la couleur de cet endroit
             // On utilise PixelReader
             PixelReader reader = image.getPixelReader();
-            if (reader != null && x >= 0 && y >= 0 && x < image.getWidth() && y < image.getHeight()) { // <=> on a cliqué sur un pixel de la photo et non ailleurs
-                Color color = reader.getColor(x, y);
-                selectedColor.set(color); //méthode de la classe ObjectProperty
+            if (reader != null && imageX >= 0 && imageY >= 0 && imageX < imageWidth && imageY < imageHeight) { // <=> on a cliqué sur un pixel de la photo et non ailleurs
+                Color color = reader.getColor(imageX, imageY);
+                selectedColor.set(color); // méthode de la classe ObjectProperty
                 // met à jour la valeur et notifient tous les listeners liés à cette propriété
                 return;
             }
@@ -80,7 +93,9 @@ public class PickerTool implements Tool {
 
         // si pas d'image, lire depuis le canvas
         if (drawingCanvas != null) {
-            Color color = readColorFromCanvas(x, y);
+            int canvasX = (int) event.getX();
+            int canvasY = (int) event.getY();
+            Color color = readColorFromCanvas(canvasX, canvasY);
             if (color != null) {
                 selectedColor.set(color);
             }

@@ -10,6 +10,8 @@ import imageprocessingapp.service.DrawingService;
 // Java standard imports
 import java.io.File;
 import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.awt.Graphics2D;
 import javax.imageio.ImageIO;
 
 // JavaFX imports
@@ -21,6 +23,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -55,7 +58,7 @@ public class MainController {
     private ColorDisplay colorDisplay;
 
     @FXML
-    private ToolSelectorController toolSelectorController;  
+    private ToolSelectorController toolSelectorController;
 
     // ===== PROPRIÉTÉS OBSERVABLES =====
     
@@ -101,6 +104,13 @@ public class MainController {
      * Utilisé pour la sauvegarde et les opérations de fichier.
      */
     private File sourceFile;
+
+    /**
+     * Instance de l'outil pinceau utilisé pour dessiner.
+     * Transmise au contrôleur de sélection d'outils pour modifier ses paramètres.
+     */
+    private PaintTool paintTool;
+
 
     // ===== PROPRIÉTÉS POUR LE SUIVI DES MODIFICATIONS DES CANVAS =====
     
@@ -209,6 +219,7 @@ public class MainController {
             toolSelectorController.setMainController(this);
             toolSelectorController.setImageView(imageView);
             toolSelectorController.setDrawingCanvas(drawingCanvas);
+            toolSelectorController.setPaintTool(paintTool);
         }
     }
 
@@ -286,6 +297,15 @@ public class MainController {
             scene.setOnKeyPressed(event -> {
                 if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.S) {
                     saveImage();
+                    event.consume();
+                } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.O) {
+                    openImage();
+                    event.consume();
+                } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.N) {
+                    newCanvas();
+                    event.consume();
+                } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.W) {
+                    closeApplication();
                     event.consume();
                 }
             });
@@ -365,6 +385,7 @@ public class MainController {
                 javafx.scene.control.Alert.AlertType.CONFIRMATION);
             alert.setTitle("Modifications non sauvegardées");
             alert.setHeaderText("Vous avez des modifications non sauvegardées.");
+            alert.setContentText("Voulez-vous sauvegarder avant de continuer ?");
             
             javafx.scene.control.ButtonType saveButton = new javafx.scene.control.ButtonType("Sauvegarder");
             javafx.scene.control.ButtonType discardButton = new javafx.scene.control.ButtonType("Ignorer");
@@ -415,6 +436,9 @@ public class MainController {
                 
                 // Redimensionner le Canvas pour correspondre à l'image
                 drawingService.resizeCanvasToImage(image);
+
+                // Réinitialiser le canvas pour qu'il soit transparent
+                drawingService.createDefaultCanvas();
                 
                 // Stocker le fichier source pour la sauvegarde
                 sourceFile = selectedFile;
@@ -460,10 +484,6 @@ public class MainController {
             try {
                 // Créer une image composite : image de base + canvas
                 Image compositeImage = drawingService.createCompositeImage();
-            
-                // Convertir JavaFX Image en BufferedImage pour pouvoir l'écrire sur le disque
-                // JavaFX Image ne peut pas être sauvegardée directement, il faut passer par BufferedImage
-                var bufferedImage = SwingFXUtils.fromFXImage(compositeImage, null);
 
                 // Déterminer le format à partir de l'extension
                 String fileName = selectedFile.getName().toLowerCase();
@@ -472,6 +492,30 @@ public class MainController {
                 // Les deux extensions pointent vers le même format
                 if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
                     format = "jpg";
+                }
+
+                // Gestion spéciale pour JPEG (pas de transparence)
+                BufferedImage bufferedImage;
+                if (format.equals("jpg")) {
+                    // Pour JPEG, créer une image avec fond blanc si nécessaire
+                    BufferedImage originalBuffered = SwingFXUtils.fromFXImage(compositeImage, null);
+                    
+                    // Créer une nouvelle image RGB (pas d'alpha)
+                    bufferedImage = new BufferedImage(
+                        originalBuffered.getWidth(), 
+                        originalBuffered.getHeight(), 
+                        BufferedImage.TYPE_INT_RGB
+                    );
+                    
+                    Graphics2D g2d = bufferedImage.createGraphics();
+                    // Fond blanc seulement si l'image originale avait de la transparence
+                    g2d.setColor(java.awt.Color.WHITE);
+                    g2d.fillRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
+                    g2d.drawImage(originalBuffered, 0, 0, null);
+                    g2d.dispose();
+                } else {
+                    // Pour PNG, conversion directe (supporte la transparence)
+                    bufferedImage = SwingFXUtils.fromFXImage(compositeImage, null);
                 }
 
                 // Sauvegarder l'image
@@ -484,6 +528,54 @@ public class MainController {
                 showAlert("Erreur de sauvegarde", "Impossible de sauvegarder l'image : " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Crée un nouveau canvas de dessin vide.
+     * Vérifie les modifications non sauvegardées avant de procéder.
+     */
+    public void newCanvas() {
+        // Vérifier s'il y a des modifications non sauvegardées
+        if (hasUnsavedChanges()) {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Modifications non sauvegardées");
+            alert.setHeaderText("Vous avez des modifications non sauvegardées.");
+            alert.setContentText("Voulez-vous sauvegarder avant de créer un nouveau canvas ?");
+            
+            javafx.scene.control.ButtonType saveButton = new javafx.scene.control.ButtonType("Sauvegarder");
+            javafx.scene.control.ButtonType discardButton = new javafx.scene.control.ButtonType("Ignorer");
+            javafx.scene.control.ButtonType cancelButton = new javafx.scene.control.ButtonType("Annuler");
+            
+            alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
+            
+            javafx.scene.control.ButtonType result = alert.showAndWait().orElse(cancelButton);
+            
+            if (result == saveButton) {
+                saveImage();
+                // Continuer avec la création du nouveau canvas
+            } else if (result == discardButton) {
+                // Continuer avec la création du nouveau canvas
+            } else {
+                // Annuler la création
+                return;
+            }
+        }
+        
+        // Créer un nouveau canvas vide
+        currentImage.set(null);
+        imageModel.clear();
+        sourceFile = null;
+        
+        // Redimensionner le canvas aux dimensions par défaut
+        drawingCanvas.setWidth(800);
+        drawingCanvas.setHeight(600);
+        
+        // Créer un canvas blanc par défaut
+        drawingService.createDefaultCanvas();
+        
+        // Réinitialiser les flags de modification
+        markCanvasAsSaved();
     }
 
     // ===== GESTION DES OUTILS =====
@@ -516,6 +608,20 @@ public class MainController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    /**
+     * Ferme l'application en déclenchant le processus de fermeture standard.
+     * Vérifie les modifications non sauvegardées avant de fermer.
+     */
+    public void closeApplication() {
+        Scene scene = imageView.getScene();
+        if (scene != null) {
+            Stage stage = (Stage) scene.getWindow();
+            // Déclencher l'événement de fermeture de fenêtre
+            // Cela activera automatiquement la logique de setupWindowCloseHandler()
+            stage.fireEvent(new javafx.stage.WindowEvent(stage, javafx.stage.WindowEvent.WINDOW_CLOSE_REQUEST));
+        }
     }
     
 }

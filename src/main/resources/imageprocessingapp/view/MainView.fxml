@@ -19,6 +19,7 @@
         <MenuBar>
             <!-- Menu Fichier avec options Open/Save -->
             <Menu text="File">
+                <MenuItem text="New" onAction="#newCanvas"/>  <!-- Crée un nouveau canvas -->
                 <MenuItem text="Open" onAction="#openImage"/>  <!-- Ouvre une image depuis le disque -->
                 <MenuItem text="Save" onAction="#saveImage"/>  <!-- Sauvegarde l'image modifiée -->
             </Menu>

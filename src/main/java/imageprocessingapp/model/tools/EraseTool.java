@@ -2,70 +2,57 @@ package imageprocessingapp.model.tools;
 
 import imageprocessingapp.model.ImageModel;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.StrokeLineCap;
-import javafx.scene.shape.StrokeLineJoin;
 
 /**
- * Outil pinceau pour dessiner sur l'image.
- * 
- * Cet outil permet à l'utilisateur de dessiner des traits continus
- * en utilisant la souris. Il dessine des cercles et des lignes
- * pour créer un effet de pinceau fluide.
- * 
+ * Outil gomme pour effacer.
+ *
+ * Même comportement que PaintTool.
+ *
  * Pattern Strategy : implémente l'interface Tool pour le comportement pinceau.
  */
-public class PaintTool implements Tool {
+public class EraseTool implements Tool {
 
     /**
      * Contexte graphique du Canvas pour dessiner.
      * Utilisé pour tracer les formes et gérer les styles de dessin.
      */
     private final GraphicsContext gc;
-    
-    /**
-     * Couleur utilisée pour dessiner.
-     * Cette couleur sera définie depuis MainController.
-     */
-    private Color paintColor = Color.BLACK;
-    
+
     /**
      * Taille du pinceau en pixels.
      */
-    private double brushSize;
+    private double brushSize = 80.0;
 
     /**
      * Coordonnées précédentes de la souris pour tracer des lignes continues.
      * Initialisées à -1 pour indiquer qu'aucun point précédent n'existe.
      */
     private double prevX = -1, prevY = -1;
-    
+
     // Callback pour notifier les modifications
     private Runnable onModificationCallback;
 
     /**
      * Constructeur de l'outil pinceau.
-     * 
+     *
      * @param gc Le GraphicsContext sur lequel dessiner
      */
-    public PaintTool(GraphicsContext gc) {
+    public EraseTool(GraphicsContext gc) {
         this.gc = gc;
-        // Configuration du style de dessin par défaut
-        gc.setStroke(paintColor);
-        gc.setFill(paintColor);
-        gc.setLineWidth(brushSize);
     }
-    
+
     /**
      * Définit le callback appelé quand une modification est effectuée.
-     * 
+     *
      * @param callback Le callback à appeler
      */
     public void setOnModificationCallback(Runnable callback) {
         this.onModificationCallback = callback;
     }
-    
+
     /**
      * Notifie qu'une modification a été effectuée.
      */
@@ -77,7 +64,7 @@ public class PaintTool implements Tool {
 
     /**
      * Gère le début du dessin quand l'utilisateur appuie sur la souris.
-     * 
+     *
      * @param event L'événement de souris contenant les coordonnées
      * @param imageModel Le modèle de l'image (non utilisé pour cet outil)
      */
@@ -88,13 +75,19 @@ public class PaintTool implements Tool {
 
         prevX = event.getX();
         prevY = event.getY();
-        gc.fillOval(prevX - brushSize/2, prevY - brushSize/2, brushSize, brushSize);
-        notifyModification();
+        if (imageModel.hasImage()) {
+            // Gomme transparente sur l'image
+            gc.clearRect(prevX - brushSize/2, prevY - brushSize/2, brushSize, brushSize);
+        } else {
+            // Gomme "blanche" sur le canvas vide
+            gc.setFill(Color.WHITE);
+            gc.fillOval(prevX - brushSize/2, prevY - brushSize/2, brushSize, brushSize);
+        }        notifyModification();
     }
 
     /**
      * Gère le dessin continu pendant que l'utilisateur fait glisser la souris.
-     * 
+     *
      * @param event L'événement de souris contenant les coordonnées
      * @param imageModel Le modèle de l'image (non utilisé pour cet outil)
      */
@@ -106,13 +99,19 @@ public class PaintTool implements Tool {
 
         double x = event.getX();
         double y = event.getY();
-
-        // Lisse le tracé
-        gc.setLineCap(StrokeLineCap.ROUND);
-        gc.setLineJoin(StrokeLineJoin.ROUND);
-
         if (prevX >= 0 && prevY >= 0) {
-            gc.strokeLine(prevX, prevY, x, y);
+
+            if (imageModel.hasImage()) {
+                // Gomme transparente sur l'image
+                gc.clearRect(Math.min(prevX, x) - brushSize/2, Math.min(prevY, y) - brushSize/2,
+                        Math.abs(x - prevX) + brushSize, Math.abs(y - prevY) + brushSize);
+            } else {
+                // Gomme "blanche" sur le canvas vide
+                gc.setFill(Color.WHITE);
+                gc.fillOval(Math.min(prevX, x) - brushSize/2, Math.min(prevY, y) - brushSize/2,
+                        Math.abs(x - prevX) + brushSize, Math.abs(y - prevY) + brushSize);
+            }
+
             notifyModification();
         }
         prevX = x;
@@ -121,7 +120,7 @@ public class PaintTool implements Tool {
 
     /**
      * Gère la fin du dessin quand l'utilisateur relâche la souris.
-     * 
+     *
      * @param event L'événement de souris (non utilisé)
      * @param imageModel Le modèle de l'image (non utilisé)
      */
@@ -134,22 +133,11 @@ public class PaintTool implements Tool {
 
     @Override
     public String getName() {
-        return "Pinceau";
-    }
-    
-    /**
-     * Définit la couleur du pinceau.
-     * 
-     * @param color La nouvelle couleur à utiliser
-     */
-    public void setPaintColor(Color color) {
-        this.paintColor = color;
-        gc.setStroke(color);
-        gc.setFill(color);
+        return "Gomme";
     }
 
     /**
-     * Définit la taille du pinceau.
+     * Définit la taille de la gomme.
      *
      * @param size La nouvelle taille en pixels
      */

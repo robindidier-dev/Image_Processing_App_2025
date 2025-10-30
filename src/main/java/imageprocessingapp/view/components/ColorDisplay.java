@@ -38,8 +38,8 @@ public class ColorDisplay extends VBox {
         // CENTRER le contenu de la VBox
         setAlignment(Pos.CENTER);
 
-        colorRectangle.setWidth(32);
-        colorRectangle.setHeight(32);
+        colorRectangle.setWidth(80);
+        colorRectangle.setHeight(40);
 
         // CENTRER le texte du label
         hexColorCode.setAlignment(Pos.CENTER);

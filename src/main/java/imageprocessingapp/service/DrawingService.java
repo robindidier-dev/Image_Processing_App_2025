@@ -49,30 +49,41 @@ public class DrawingService {
      */
     public void setupCanvas() {
         drawingCanvas.setMouseTransparent(false);
+        
+        // Configuration CSS pour forcer la transparence
         drawingCanvas.setStyle("-fx-background-color: transparent;");
         
-        // Ajouter un listener pour détecter les modifications
         GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
-        // Note: JavaFX ne fournit pas d'événement direct pour les modifications de canvas
-        // On utilisera plutôt les événements de souris dans le contrôleur
+        
+        // Nettoyer et configurer la transparence
+        gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+        
+        // Configuration critique pour la transparence
+        gc.setGlobalAlpha(1.0);
+        gc.setGlobalBlendMode(javafx.scene.effect.BlendMode.SRC_OVER);
+        
+        // S'assurer que le canvas est transparent
+        gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
     }
     
     /**
-     * Crée un canvas blanc par défaut pour dessiner sans image.
+     * Crée un canvas par défaut (blanc si pas d'image, transparent si image chargée).
      */
     public void createDefaultCanvas() {
         if (drawingCanvas != null) {
             GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
+            
+            // Nettoyer complètement le canvas
             gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
             
-            // Remplir avec un fond blanc seulement si aucune image n'est chargée
             if (imageModel.getImage() == null) {
+                // Fond blanc seulement si aucune image n'est chargée
                 gc.setFill(Color.WHITE);
                 gc.fillRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
             }
         }
     }
-    
+
     /**
      * Redimensionne le canvas pour correspondre à l'image chargée.
      */
@@ -85,9 +96,12 @@ public class DrawingService {
             drawingCanvas.setWidth(displayWidth);
             drawingCanvas.setHeight(displayHeight);
             
-            // Effacer le fond blanc pour laisser voir l'image
+            // IMPORTANT: Nettoyer complètement le canvas après redimensionnement
             GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
             gc.clearRect(0, 0, displayWidth, displayHeight);
+            
+            // Forcer la transparence en configurant les propriétés de blend
+            gc.setGlobalAlpha(1.0);
         }
     }
     

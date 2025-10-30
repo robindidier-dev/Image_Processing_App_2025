@@ -54,6 +54,15 @@ public class MainApp extends Application {
             if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.S) {
                 controller.saveImage();
                 event.consume();
+            } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.O) {
+                controller.openImage();
+                event.consume();
+            } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.N) {
+                controller.newCanvas();
+                event.consume();
+            } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.W) {
+                controller.closeApplication();
+                event.consume();
             }
         });
     }

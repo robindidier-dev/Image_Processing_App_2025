@@ -17,32 +17,75 @@
         <Insets top="20" right="10" bottom="10" left="10"/>
     </padding>
 
-    <ToggleButton fx:id="pinceauButton" onAction="#pinceauPressed" 
-    prefWidth="32" prefHeight="32" minWidth="32" minHeight="32" maxWidth="32" maxHeight="32"
-    styleClass="tool-button">
+    <ToggleButton fx:id="pinceauButton" onAction="#pinceauPressed"
+                  prefWidth="120" minWidth="120" maxWidth="120"
+                  prefHeight="40" minHeight="40" maxHeight="40"
+                  styleClass="tool-button">
+
         <graphic>
-            <ImageView fx:id="pinceauImageView" fitWidth="32" fitHeight="32" preserveRatio="true">
-                <image>
-                    <Image url="@../image/pinceau.png"/>
-                </image>
-            </ImageView>
+            <HBox alignment="CENTER" spacing="8">
+                <!-- Icône -->
+                <ImageView fx:id="pinceauImageView" fitWidth="24" fitHeight="24" preserveRatio="true">
+                    <image>
+                        <Image url="@../image/pinceau.png"/>
+                    </image>
+                </ImageView>
+                <!-- Texte -->
+                <Label text="Pinceau" style="-fx-font-size: 12px; -fx-text-fill: #333;" />
+            </HBox>
         </graphic>
     </ToggleButton>
-    
-    <ToggleButton fx:id="pipetteButton" onAction="#pipettePressed" 
-    prefWidth="32" prefHeight="32" minWidth="32" minHeight="32" maxWidth="32" maxHeight="32"
-    styleClass="tool-button">
+
+    <ToggleButton fx:id="gommeButton" onAction="#gommePressed"
+                  prefWidth="120" minWidth="120" maxWidth="120"
+                  prefHeight="40" minHeight="40" maxHeight="40"
+                  styleClass="tool-button">
+
         <graphic>
-            <ImageView fx:id="pipetteImageView" fitWidth="24" fitHeight="24" preserveRatio="true">
-                <image>
-                    <Image url="@../image/pipette.png"/>
-                </image>
-            </ImageView>
+            <HBox alignment="CENTER" spacing="8">
+                <!-- Icône -->
+                <ImageView fx:id="gommeImageView" fitWidth="24" fitHeight="24" preserveRatio="true">
+                    <image>
+                        <Image url="@../image/gomme.png"/>
+                    </image>
+                </ImageView>
+                <!-- Texte -->
+                <Label text="Gomme" style="-fx-font-size: 12px; -fx-text-fill: #333;" />
+            </HBox>
+        </graphic>
+    </ToggleButton>
+
+
+    <ToggleButton fx:id="pipetteButton" onAction="#pipettePressed"
+                  prefWidth="120" minWidth="120" maxWidth="120"
+                  prefHeight="40" minHeight="40" maxHeight="40"
+                  styleClass="tool-button">
+
+        <graphic>
+            <HBox alignment="CENTER" spacing="8">
+                <ImageView fx:id="pipetteImageView" fitWidth="24" fitHeight="24" preserveRatio="true">
+                    <image>
+                        <Image url="@../image/pipette.png"/>
+                    </image>
+                </ImageView>
+                <Label text="Pipette" style="-fx-font-size: 12px; -fx-text-fill: #333;" />
+            </HBox>
         </graphic>
     </ToggleButton>
 
     <!-- Ajouter ColorDisplay dans la toolbar -->
     <ColorDisplay fx:id="colorDisplay"/>
+
+    <!-- Slider de sélection de la taille de pinceau -->
+    <VBox spacing="4" alignment="CENTER">
+        <Slider fx:id="brushSizeSlider"
+                styleClass="brush-size-slider"
+                min="1" max="50" value="10"
+                orientation="HORIZONTAL"
+                onMouseReleased="#brushSizeChanged" />
+
+        <Label text="Taille" style="-fx-font-size: 11px; -fx-text-fill: #555;" />
+    </VBox>
 
     <!-- Ajouter un spacer pour pousser le trait vers le bas -->
     <Region VBox.vgrow="ALWAYS"/>

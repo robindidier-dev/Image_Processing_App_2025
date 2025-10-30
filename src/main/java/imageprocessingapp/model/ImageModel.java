@@ -89,23 +89,47 @@ public class ImageModel {
      * @return L'image composite
      */
     private Image createCompositeWithImage(Canvas drawingCanvas) {
-        // Créer un Canvas temporaire pour la composition
-        Canvas tempCanvas = new Canvas(width, height);
-        GraphicsContext gc = tempCanvas.getGraphicsContext2D();
+        // Créer une WritableImage pour la composition
+        WritableImage compositeImage = new WritableImage(width, height);
+        PixelWriter compositeWriter = compositeImage.getPixelWriter();
         
-        // Dessiner l'image de base
-        gc.drawImage(currentImage, 0, 0);
+        // Copier l'image de base
+        PixelReader imageReader = currentImage.getPixelReader();
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Color imageColor = imageReader.getColor(x, y);
+                compositeWriter.setColor(x, y, imageColor);
+            }
+        }
         
-        // Dessiner le canvas par-dessus (redimensionné si nécessaire)
-        double scaleX = width / drawingCanvas.getWidth();
-        double scaleY = height / drawingCanvas.getHeight();
+        // Capturer le canvas avec des paramètres spéciaux pour la transparence
+        javafx.scene.SnapshotParameters params = new javafx.scene.SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);  // Fond transparent
+        Image canvasSnapshot = drawingCanvas.snapshot(params, null);
         
-        gc.save();
-        gc.scale(scaleX, scaleY);
-        gc.drawImage(drawingCanvas.snapshot(null, null), 0, 0);
-        gc.restore();
+        PixelReader canvasReader = canvasSnapshot.getPixelReader();
         
-        return tempCanvas.snapshot(null, null);
+        double scaleX = (double) width / drawingCanvas.getWidth();
+        double scaleY = (double) height / drawingCanvas.getHeight();
+        
+        // Superposer le dessin
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int canvasX = (int) (x / scaleX);
+                int canvasY = (int) (y / scaleY);
+                
+                if (canvasX < canvasSnapshot.getWidth() && canvasY < canvasSnapshot.getHeight()) {
+                    Color canvasColor = canvasReader.getColor(canvasX, canvasY);
+                    
+                    // Vérifier la transparence
+                    if (canvasColor.getOpacity() > 0.01) {
+                        compositeWriter.setColor(x, y, canvasColor);
+                    }
+                }
+            }
+        }
+        
+        return compositeImage;
     }
 
     /**
