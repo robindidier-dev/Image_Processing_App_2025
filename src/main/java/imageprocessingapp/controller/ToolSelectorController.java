@@ -124,6 +124,12 @@ public class ToolSelectorController {
      */
     private PaintTool paintTool;
 
+    /**
+     * Gomme.
+     * Utilisé pour accéder à la méthode setBrushSize().
+     */
+    private EraseTool eraseTool;
+
     // ===== MÉTHODES DE CONFIGURATION =====
     
     /**
@@ -169,6 +175,15 @@ public class ToolSelectorController {
      */
     public void setPaintTool(PaintTool tool) {
         this.paintTool = tool;
+    }
+
+    /**
+     * Retourne la Gomme.
+     *
+     * @return Le eraseTool
+     */
+    public void setEraseTool(EraseTool tool) {
+        this.eraseTool = tool;
     }
 
 
@@ -263,7 +278,12 @@ public class ToolSelectorController {
             if (mainController != null && drawingCanvas != null) {
                 // Créer et configurer l'outil pinceau
                 GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
-                EraseTool eraseTool = new EraseTool(gc);
+                eraseTool = new EraseTool(gc);
+
+                double brushSize = brushSizeSlider.getValue();
+                if (this.eraseTool != null) {
+                    this.eraseTool.setBrushSize(brushSize);
+                }
 
                 // Configurer le callback de modification
                 eraseTool.setOnModificationCallback(() -> mainController.markCanvasAsModified());
@@ -291,10 +311,17 @@ public class ToolSelectorController {
         }
     }
 
+    /**
+     * Modifie la taille du pinceau et de la gomme dès qu'une action est détectée
+     * sur le slider.
+     */
     public void brushSizeChanged(MouseEvent mouseEvent) {
         double brushSize = brushSizeSlider.getValue();
         if (this.paintTool != null) {
             this.paintTool.setBrushSize(brushSize);
+        }
+        if (this.eraseTool != null) {
+            this.eraseTool.setBrushSize(brushSize);
         }
     }
 

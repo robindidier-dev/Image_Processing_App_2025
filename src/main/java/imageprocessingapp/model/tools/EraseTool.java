@@ -5,6 +5,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.StrokeLineCap;
+import javafx.scene.shape.StrokeLineJoin;
 
 /**
  * Outil gomme pour effacer.
@@ -24,7 +26,7 @@ public class EraseTool implements Tool {
     /**
      * Taille du pinceau en pixels.
      */
-    private double brushSize = 80.0;
+    private double brushSize;
 
     /**
      * Coordonnées précédentes de la souris pour tracer des lignes continues.
@@ -42,6 +44,9 @@ public class EraseTool implements Tool {
      */
     public EraseTool(GraphicsContext gc) {
         this.gc = gc;
+        gc.setStroke(Color.WHITE);
+        gc.setFill(Color.WHITE);
+        gc.setLineWidth(brushSize);
     }
 
     /**
@@ -61,6 +66,28 @@ public class EraseTool implements Tool {
             onModificationCallback.run();
         }
     }
+
+
+
+    /**
+     * Permet rendre des lignes transparentes (uniquement des rectangles nativement)
+     * Interpole entre (x1,y1) et (x2,y2) et efface des rectangles centrés le long du segment.
+     * steps = (int) Math.ceil(distance) pour couvrir chaque pixel environ, simple et efficace.
+     */
+    private void eraseRectLine(double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double dist = Math.hypot(dx, dy);
+        int steps = Math.max(1, (int) Math.ceil(dist));
+
+        for (int i = 0; i <= steps; i++) {
+            double t = (double) i / steps;
+            double xi = x1 + t * dx;
+            double yi = y1 + t * dy;
+            gc.clearRect(xi - brushSize / 2.0, yi - brushSize / 2.0, brushSize, brushSize);
+        }
+    }
+
 
     /**
      * Gère le début du dessin quand l'utilisateur appuie sur la souris.
@@ -82,7 +109,8 @@ public class EraseTool implements Tool {
             // Gomme "blanche" sur le canvas vide
             gc.setFill(Color.WHITE);
             gc.fillOval(prevX - brushSize/2, prevY - brushSize/2, brushSize, brushSize);
-        }        notifyModification();
+        }
+        notifyModification();
     }
 
     /**
@@ -99,19 +127,20 @@ public class EraseTool implements Tool {
 
         double x = event.getX();
         double y = event.getY();
+
+        // Lisse le tracé
+        gc.setLineCap(StrokeLineCap.ROUND);
+        gc.setLineJoin(StrokeLineJoin.ROUND);
+
         if (prevX >= 0 && prevY >= 0) {
 
             if (imageModel.hasImage()) {
                 // Gomme transparente sur l'image
-                gc.clearRect(Math.min(prevX, x) - brushSize/2, Math.min(prevY, y) - brushSize/2,
-                        Math.abs(x - prevX) + brushSize, Math.abs(y - prevY) + brushSize);
+                eraseRectLine(prevX, prevY, x, y);
             } else {
                 // Gomme "blanche" sur le canvas vide
-                gc.setFill(Color.WHITE);
-                gc.fillOval(Math.min(prevX, x) - brushSize/2, Math.min(prevY, y) - brushSize/2,
-                        Math.abs(x - prevX) + brushSize, Math.abs(y - prevY) + brushSize);
+                gc.strokeLine(prevX, prevY, x, y);
             }
-
             notifyModification();
         }
         prevX = x;
