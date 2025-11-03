@@ -1,8 +1,8 @@
 # ImageProcessingApp
 
 Une application JavaFX de traitement d'image développée en équipe avec les fonctionnalités suivantes :
-- **Outils de dessin** (pinceau, pipette)
-- **Effet mosaïque** utilisant un KdTree
+- **Outils de dessin** (pinceau, pipette, gomme)
+- **Effet mosaïque** utilisant un **KdTree**
 - **Seam Carving** pour redimensionner intelligemment les images
 - **Système de couleurs** avec sélecteur RGB
 
@@ -19,28 +19,46 @@ src/main/java/imageprocessingapp/
 │  ├── tools/                     # Outils de dessin
 │  │  ├── Tool.java               # Interface des outils
 │  │  ├── PaintTool.java
-│  │  └── PickerTool.java     
-│  ├── ColorUtils.java 
+│  │  ├── PickerTool.java
+│  │  └── EraseTool.java
 │  ├── filters/                   # Filtres/effets (mosaïque, seam carving)
+│  │  ├── MosaicFilter.java
+│  │  ├── EnergyCalculator.java
+│  │  └── SeamCarver.java
 │  └── structures/                # Structures de données (KdTree)
+│     ├── Point2D.java
+│     └── KdTree.java
 ├── view/                         # Composants d'interface utilisateur
 │  └── components/                # Widgets réutilisables
 │     └── ColorDisplay.java
-├── controller/                      # Logique de contrôle
-│  ├── MainController.java           # Contrôleur principal
-│  ├── ToolSelectorController.java        # Contient la logique ToggleGroup
-│  └── ColorPickerDialogController.java   # Contient la logique d'affichage
+├── controller/                   # Logique de contrôle
+│  ├── MainController.java        # Contrôleur principal
+│  ├── ToolSelectorController.java# Logique ToggleGroup (outils)
+│  ├── ColorPickerDialogController.java
+│  ├── MosaicDialogController.java
+│  └── SeamCarvingDialogController.java
 └── service/
    └── DrawingService.java
 
 src/main/resources/imageprocessingapp/
-├── view/                        
-│  └── MainView.fxml              # Interface principale (FXML)
-└── dialogs/                      # Fenêtres de dialogue
+├── view/
+│  ├── MainView.fxml              # Interface principale (FXML)
+│  └── ToolSelectorView.fxml
+├── dialogs/                      # Fenêtres de dialogue
+│  ├── ColorPickerDialog.fxml
+│  ├── MosaicDialog.fxml
+│  └── SeamCarvingDialog.fxml
+├── image/
+│  ├── pinceau.png
+│  ├── pipette.png
+│  └── gomme.png
+└── style/
+   ├── ToolBar.css
+   └── ColorPickerDialog.css
 
 src/test/java/imageprocessingapp/
-├── model/                        # Tests unitaires du model
-└── integration/                  # Tests d'intégration
+├── model/                        # Tests unitaires du model (ColorUtils, KdTree, filters)
+└── integration/                  # Tests d'intégration (flux MVC, filtres end-to-end)
 ```
 
 
@@ -54,24 +72,24 @@ Le pattern **Model-View-Controller** organise le code selon trois responsabilit�
 - **Données persistantes** : Images, couleurs, états d'application
 - **Règles métier** : Calculs, transformations, validations
 - **Logique pure** : Indépendante de l'interface utilisateur
-- **Réutilisabilité** : Peut être testé et utilisé sans UI
+- **Réutilisabilité** : Testable sans UI
 
 ##### **`view/` + FXML - Interface utilisateur**
 - **Composants visuels** : Boutons, labels, canvas
 - **Layout et style** : Positionnement, CSS, FXML
 - **Widgets réutilisables** : Composants personnalisés
-- **Présentation** : Comment les données sont affichées
+- **Présentation** : Affichage des données
 
 ##### **`controller/` - Coordination**
 - **Interactions utilisateur** : Clics, saisies, événements
-- **Coordination** : Fait le lien entre Model et View
-- **État de l'interface** : Gestion des boutons, sélections
-- **Logique de contrôle** : Quand et comment réagir
+- **Coordination** : Lien entre Model et View
+- **État UI** : Gestion des boutons, sélections
+- **Logique de contrôle** : Orchestration des actions
 
 ##### **`service/` - Logique technique**
 - **Opérations complexes** : Manipulation de canvas, composition d'images
-- **Logique technique** : Pas métier, pas UI, mais nécessaire
-- **Réutilisabilité** : Peut être utilisé par plusieurs contrôleurs
+- **Logique technique** : Non métier, non UI, mais nécessaire
+- **Réutilisabilité** : Partageable par plusieurs contrôleurs
 
 
 #### **Flux de données MVC**
@@ -106,15 +124,20 @@ Le pattern **Model-View-Controller** organise le code selon trois responsabilit�
 - **FXML** : Séparation UI/logique pour faciliter les modifications
 - **Service Layer** : Logique technique réutilisable (`DrawingService`)
 - **Interface Tool** : Polymorphisme pour les outils de dessin
+- **KdTree** : Accélère la recherche du plus proche voisin (mosaïque)
+- **Seam Carving** : Redimensionnement via énergie cumulative (programmation dynamique)
 
 ### Composants principaux
 
 - **MainApp** : Lance l'application JavaFX
-- **MainController** : Gère les interactions utilisateur et coordonne les composants
+- **MainController** : Interactions utilisateur et coordination
 - **ImageModel** : Représente une image modifiable avec accès aux pixels
 - **MainView.fxml** : Interface utilisateur avec menu, toolbar et zone d'image
-- **DrawingService** : Gère les opérations sur le canvas de dessin
-- **ToolSelectorController** : Gère la sélection des outils (ToggleGroup)
+- **DrawingService** : Opérations sur le canvas de dessin
+- **ToolSelectorController** : Sélection des outils (ToggleGroup)
+- **MosaicFilter** : Effet mosaïque à partir d’un KdTree de seeds
+- **EnergyCalculator / SeamCarver** : Calcul d’énergie et suppression de seams
+- **MosaicDialog / SeamCarvingDialog** : Paramétrage des filtres (UI)
 
 ##  Comment lancer
 

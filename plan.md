@@ -122,7 +122,7 @@ Feature complète répartie par couche MVC.
 - [x] Implémenter le système de couleur (ColorDisplay widget, ColorPickerDialog, property)
 - [x] Créer Tool interface, PaintTool, PickerTool et ToolSelector widget
 - [x] Ajouter menu File avec Open et Save image
-- [ ] Implémenter KdTree avec Point2D, insertion et recherche plus proche voisin
+- [x] Implémenter KdTree avec Point2D, insertion et recherche plus proche voisin
 - [ ] Créer MosaicFilter utilisant KdTree pour effet mosaïque
 - [ ] Ajouter MosaicDialog et entrée menu Filter > Mosaic Effect
 - [ ] Implémenter EnergyCalculator pour calcul gradient des pixels
