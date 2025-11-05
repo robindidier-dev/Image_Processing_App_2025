@@ -239,10 +239,9 @@ public class ImageModel {
      * @return La couleur du pixel, ou null si les coordonnées sont invalides
      */
     public Color getPixelColor(int x, int y) {
-        if (isValidCoordinate(x, y) && pixelReader != null) {
-            return pixelReader.getColor(x, y);
-        }
-        return null;
+        if (!isValidCoordinate(x, y)) return null;
+        PixelReader reader = (writableImage != null) ? writableImage.getPixelReader() : pixelReader;
+        return (reader != null) ? reader.getColor(x, y) : null;
     }
 
     /**

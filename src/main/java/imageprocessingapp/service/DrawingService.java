@@ -5,6 +5,9 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import javafx.application.Platform;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Service centralisé pour la gestion du canvas de dessin.
@@ -43,73 +46,117 @@ public class DrawingService {
             onCanvasModified.run();
         }
     }
+
+    /**
+     * Exécute une action sur le thread JavaFX de manière synchrone.
+     * 
+     * Cette méthode garantit que toute modification du canvas ou interaction avec l'UI 
+     * se fait sur le thread d'application JavaFX. 
+     * En JavaFX, toute opération qui modifie l'interface graphique DOIT être exécutée 
+     * sur ce thread principal, sinon l'application peut crasher ou exposer des comportements non déterministes.
+     *
+     * @param action L'action à exécuter sur le thread UI JavaFX
+     */
+    private void runOnFxThreadSync(Runnable action) {
+        if (Platform.isFxApplicationThread()) {
+            action.run();
+        } else {
+            CountDownLatch latch = new CountDownLatch(1);
+            Platform.runLater(() -> {
+                try { action.run(); } finally { latch.countDown(); }
+            });
+            try { 
+                latch.await(); 
+            } catch (InterruptedException ignored) { 
+                Thread.currentThread().interrupt(); 
+            }
+        }
+    }
     
     /**
      * Configure le canvas pour le dessin.
      */
     public void setupCanvas() {
-        drawingCanvas.setMouseTransparent(false);
-        
-        // Configuration CSS pour forcer la transparence
-        drawingCanvas.setStyle("-fx-background-color: transparent;");
-        
-        GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
-        
-        // Nettoyer et configurer la transparence
-        gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
-        
-        // Configuration critique pour la transparence
-        gc.setGlobalAlpha(1.0);
-        gc.setGlobalBlendMode(javafx.scene.effect.BlendMode.SRC_OVER);
-        
-        // S'assurer que le canvas est transparent
-        gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+        runOnFxThreadSync(() -> {
+            drawingCanvas.setMouseTransparent(false);
+            
+            // Configuration CSS pour forcer la transparence
+            drawingCanvas.setStyle("-fx-background-color: transparent;");
+            
+            GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
+            
+            // Nettoyer et configurer la transparence
+            gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+            
+            // Configuration critique pour la transparence
+            gc.setGlobalAlpha(1.0);
+            gc.setGlobalBlendMode(javafx.scene.effect.BlendMode.SRC_OVER);
+            
+            // S'assurer que le canvas est transparent
+            gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+        });
     }
     
     /**
      * Crée un canvas par défaut (blanc si pas d'image, transparent si image chargée).
      */
     public void createDefaultCanvas() {
-        if (drawingCanvas != null) {
-            GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
-            
-            // Nettoyer complètement le canvas
-            gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
-            
-            if (imageModel.getImage() == null) {
-                // Fond blanc seulement si aucune image n'est chargée
-                gc.setFill(Color.WHITE);
-                gc.fillRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+        runOnFxThreadSync(() -> {
+            if (drawingCanvas != null) {
+                GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
+                
+                // Nettoyer complètement le canvas
+                gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+                
+                if (imageModel.getImage() == null) {
+                    // Fond blanc seulement si aucune image n'est chargée
+                    gc.setFill(Color.WHITE);
+                    gc.fillRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+                }
             }
-        }
+        });
     }
 
     /**
      * Redimensionne le canvas pour correspondre à l'image chargée.
      */
     public void resizeCanvasToImage(Image image) {
-        if (image != null) {
-            double[] dimensions = imageModel.calculateDisplayDimensions(800, 600);
-            double displayWidth = dimensions[0];
-            double displayHeight = dimensions[1];
-            
-            drawingCanvas.setWidth(displayWidth);
-            drawingCanvas.setHeight(displayHeight);
-            
-            // IMPORTANT: Nettoyer complètement le canvas après redimensionnement
-            GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, displayWidth, displayHeight);
-            
-            // Forcer la transparence en configurant les propriétés de blend
-            gc.setGlobalAlpha(1.0);
-        }
+        runOnFxThreadSync(() -> {
+            if (image != null) {
+                double[] dimensions = imageModel.calculateDisplayDimensions(800, 600);
+                double displayWidth = dimensions[0];
+                double displayHeight = dimensions[1];
+                
+                drawingCanvas.setWidth(displayWidth);
+                drawingCanvas.setHeight(displayHeight);
+                
+                // IMPORTANT: Nettoyer complètement le canvas après redimensionnement
+                GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
+                gc.clearRect(0, 0, displayWidth, displayHeight);
+                
+                // Forcer la transparence en configurant les propriétés de blend
+                gc.setGlobalAlpha(1.0);
+            }
+        });
     }
     
     /**
      * Crée une image composite pour la sauvegarde.
+     * S'assure que l'image est créée sur le thread JavaFX.
      */
     public Image createCompositeImage() {
-        return imageModel.createCompositeImage(drawingCanvas);
+        if (Platform.isFxApplicationThread()) {
+            return imageModel.createCompositeImage(drawingCanvas);
+        } else {
+            AtomicReference<Image> ref = new AtomicReference<>();
+            CountDownLatch latch = new CountDownLatch(1);
+            Platform.runLater(() -> {
+                try { ref.set(imageModel.createCompositeImage(drawingCanvas)); }
+                finally { latch.countDown(); }
+            });
+            try { latch.await(); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+            return ref.get();
+        }
     }
     
     /**

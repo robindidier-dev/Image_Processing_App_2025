@@ -29,7 +29,7 @@ public final class ColorUtils {
         int g = (int) Math.round(c.getGreen() * 255);
         int b = (int) Math.round(c.getBlue() * 255);
 
-        return "#" + Integer.toHexString(r) + Integer.toHexString(g) + Integer.toHexString(b);
+        return String.format("#%02x%02x%02x", r, g, b);
 
     }
 
