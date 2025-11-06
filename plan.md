@@ -60,7 +60,7 @@
 
 **Branch:** `adrien/mosaic-ui`
 
-- Créer `MosaicDialog.fxml` avec Spinner (nombre seeds), ChoiceBox (distribution)
+- Créer `MosaicDialog.fxml` avec Slider (nombre seeds), ChoiceBox (distribution)
 - Controller avec application du filtre et preview
 - Ajouter Menu > Filters > Mosaic Effect
 - Intégration avec MainController
@@ -123,8 +123,8 @@ Feature complète répartie par couche MVC.
 - [x] Créer Tool interface, PaintTool, PickerTool et ToolSelector widget
 - [x] Ajouter menu File avec Open et Save image
 - [x] Implémenter KdTree avec Point2D, insertion et recherche plus proche voisin
-- [ ] Créer MosaicFilter utilisant KdTree pour effet mosaïque
-- [ ] Ajouter MosaicDialog et entrée menu Filter > Mosaic Effect
+- [x] Créer MosaicFilter utilisant KdTree pour effet mosaïque
+- [x] Ajouter MosaicDialog et entrée menu Filter > Mosaic Effect
 - [ ] Implémenter EnergyCalculator pour calcul gradient des pixels
 - [ ] Créer SeamCarver avec programmation dynamique et backtracking
 - [ ] Ajouter SeamCarvingDialog et entrée menu Edit > Resize with Seam Carving
