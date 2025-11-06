@@ -623,5 +623,16 @@ public class MainController {
             stage.fireEvent(new javafx.stage.WindowEvent(stage, javafx.stage.WindowEvent.WINDOW_CLOSE_REQUEST));
         }
     }
-    
+
+
+
+
+    public void openMosaicDialog() {
+        try {
+            // Créer et afficher le MosaicDialog
+            MosaicDialogController.show(this, (javafx.stage.Stage) imageView.getScene().getWindow(), currentImage, imageModel);
+        } catch (Exception e) {
+            showAlert("Erreur", "Impossible d'ouvrir le MosaicDialog : " + e.getMessage());
+        }
+    }
 }
