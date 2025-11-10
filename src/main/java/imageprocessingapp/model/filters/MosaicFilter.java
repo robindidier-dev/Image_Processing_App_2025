@@ -7,9 +7,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-import java.util.Optional;
 
-import java.util.Random;
+import java.util.*;
 
 public class MosaicFilter {
 
@@ -55,35 +54,80 @@ public class MosaicFilter {
     }
 
 
+
     public Image applyMosaic() {
 
-        WritableImage writableImage = new WritableImage(width, height);
-        // Récupérer le PixelWriter de la writableImage
-        PixelWriter writer = writableImage.getPixelWriter();
-
-        Point2D[] points = generateRandomPoints();
-
-        // Ajout des points aléatoires dans le KdTree
+        // Génération de n points aléatoires (seeds) et insertion dans le KdTree
+        Point2D[] seeds = generateRandomPoints();
         KdTree kdTree = new KdTree();
-        for (Point2D p : points) kdTree.insert(p);
+        for (Point2D p : seeds) kdTree.insert(p);
 
-        // Couleur par défaut
-        Color color = Color.BLACK;
 
+        // Création d'un dictionnaire {seed : [points appartenant à une cellule]}
+        // Initiation {seed1 : [seed1], etc}
+        Map<Point2D, List<Point2D>> cells = new HashMap<>(seeds.length);
+        for (Point2D seed : seeds) {
+            List<Point2D> list = new ArrayList<>(1);
+            list.add(seed); // initialisation {seed : [seed]}
+            cells.put(seed, list);
+        }
+
+        // Remplissage du dictionnaire
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
 
                 Point2D target = new Point2D(x, y); // Pixel actuel
+                Optional<Point2D> nearest = kdTree.findNearest(target); // Pixel du KdTree le plus proche
 
-                Optional<Point2D> nearest = kdTree.findNearest(target);
                 if (nearest.isPresent()) {
-                    Point2D point = nearest.get();
-                    int xNearest = (int) point.x();
-                    int yNearest = (int) point.y();
-                    color = imageModel.getPixelColor(xNearest, yNearest);
+                    Point2D seed = nearest.get();
+                    // Test si le target = nearest pour ne pas que nearest soit deux fois dans le dictionnaire
+                    if (!nearest.equals(target)) {
+                        List<Point2D> cell = cells.get(seed);
+                        cell.add(target);
+                    }
                 }
-                // On colorie le pixel (x, y)
-                writer.setColor(x, y, color);
+            }
+        }
+        // On appelle une méthode calculant la moyenne des couleurs et
+        // renvoyant une WritableImage.
+        return applyColor(cells);
+    }
+
+    private WritableImage applyColor(Map<Point2D, List<Point2D>> cells) {
+        WritableImage writableImage = new WritableImage(width, height);
+        PixelWriter writer = writableImage.getPixelWriter();
+
+        // Itération sur les entries (couple clé valeur) du dictionnaire
+        for (Map.Entry<Point2D, List<Point2D>> entry : cells.entrySet()) {
+            List<Point2D> cell = entry.getValue();
+            if (cell == null || cell.isEmpty()) {
+                throw new NoSuchElementException("Dict mosaic : error");
+            } else {
+                // Calcul de la moyenne des couleurs
+                double countR = 0;
+                double countG = 0;
+                double countB = 0;
+                int total = 0;
+
+                for (Point2D pixel: cell) {
+                    int x = (int) pixel.x();
+                    int y = (int) pixel.y();
+                    Color c = imageModel.getPixelColor(x, y);
+                    countR += c.getRed();
+                    countG += c.getGreen();
+                    countB += c.getBlue();
+                    total++;
+                }
+
+                Color avg = new Color(countR / total, countG / total, countB / total, 1);
+
+                // On colorie la cellule
+                for (Point2D pixel: cell) {
+                    int x = (int) pixel.x();
+                    int y = (int) pixel.y();
+                    writer.setColor(x, y, avg);
+                }
             }
         }
         return writableImage;

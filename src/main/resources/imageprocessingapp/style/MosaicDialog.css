@@ -1,65 +1,25 @@
-
-/*
- Fichier de complément de ColorPickerDialog.fmxl.
- Permet de travailler la mise en forme du widget et de proposer un design
- moderne (ici on a choisi du flat design).
- */
-
 /* Racine : GridPane */
 .root-pane {
-    -fx-background-color: #e9e9e9;;
-    -fx-padding: 12;
+    -fx-background-color: #e9e9e9;
+    -fx-padding: 16 0 16 0;
     -fx-border-color: #444;
     -fx-border-width: 1.2;
     -fx-border-radius: 10;
     -fx-background-radius: 10;
-    -fx-padding: 16 0 16 0;
 }
 
-/* ColorDisplay à gauche */
-#colorDisplay {
+/* Label principal (sélecteur générique dans la racine) */
+.root-pane > Label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #555;
     -fx-alignment: center;
-    -fx-background-color: #e9e9e9;
-    -fx-background-radius: 8;
-}
-
-/* Rectangle du ColorDisplay */
-#colorDisplay Rectangle {
-    -fx-arc-width: 10;
-    -fx-arc-height: 10;
-    -fx-stroke: #222222;
-    -fx-stroke-width: 1;
-    -fx-padding: 1;
-}
-
-/* Label hexadécimal du ColorDisplay */
-#colorDisplay Label {
-    -fx-font-family: "Consolas", monospace;
-    -fx-font-size: 11pt;
-    -fx-text-fill: #333333;
-    -fx-padding: 6 0 0 0;
-}
-
-/* ColorPicker en haut à droite */
-#colorPicker {
-    -fx-pref-width: 138px;
-    -fx-background-color: white;
-    -fx-border-color: #aaaaaa;
-    -fx-border-radius: 6;
-    -fx-background-radius: 6;
-    -fx-padding: 6 10;
-}
-.color-picker {
-    -fx-color-label-visible: true;
-}
-.color-picker .label {
-    -fx-text-fill: white;
 }
 
 /* HBox des boutons */
 .hbox {
     -fx-spacing: 14;
     -fx-padding: 10 0 10 0;
+    -fx-alignment: center;
 }
 
 /* Bouton Cancel */
@@ -82,28 +42,25 @@
     -fx-background-radius: 6;
     -fx-padding: 6 16;
 }
-
 #okButton:hover {
     -fx-background-color: #a6f4bb;
 }
 
-/* Piste du slider */
-.spinner-slider .track {
+/* Slider (classe personnalisée spinner-slider définie dans le FXML) */
+.mosaicSlider .track {
     -fx-background-color: #dddddd;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-pref-height: 4;
 }
 
-/* Remplissage actif */
-.spinner-slider .filled-track {
-    -fx-background-color: #d8eaff; /* bleu pastel clair */
+.mosaicSlider .filled-track {
+    -fx-background-color: #d8eaff;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
 }
 
-/* Bouton du curseur */
-.spinner-slider .thumb {
+.mosaicSlider .thumb {
     -fx-background-color: #ffffff;
     -fx-border-color: #aaaaaa;
     -fx-border-width: 1.2;
@@ -113,4 +70,10 @@
     -fx-pref-height: 12;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0.2, 0, 1);
     -fx-cursor: hand;
+}
+
+/* Ajustements responsive : limiter largeur du slider si la fenêtre est petite */
+.root-pane .mosaicSlider {
+    -fx-max-width: 260px;
+    -fx-min-width: 150px;
 }

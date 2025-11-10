@@ -141,19 +141,25 @@ public class DrawingService {
     }
     
     /**
-     * Crée une image composite pour la sauvegarde.
-     * S'assure que l'image est créée sur le thread JavaFX.
+     * Génère une image composite résultat du dessin et de l'image affichée.
+     * Cette opération doit impérativement s'exécuter sur le thread JavaFX : 
+     * - Si on est déjà sur le thread JavaFX, on appelle directement la méthode du modèle.
+     * - Sinon, on utilise Platform.runLater et une synchronisation pour obtenir le résultat.
      */
     public Image createCompositeImage() {
         if (Platform.isFxApplicationThread()) {
             return imageModel.createCompositeImage(drawingCanvas);
         } else {
+            // atomic reference pour stocker le résultat de la création de l'image composite
             AtomicReference<Image> ref = new AtomicReference<>();
+            // count down latch pour attendre la fin de la création de l'image composite
             CountDownLatch latch = new CountDownLatch(1);
+            // exécuter la création de l'image composite sur le thread JavaFX
             Platform.runLater(() -> {
                 try { ref.set(imageModel.createCompositeImage(drawingCanvas)); }
                 finally { latch.countDown(); }
             });
+            // attendre la fin de la création de l'image composite
             try { latch.await(); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
             return ref.get();
         }

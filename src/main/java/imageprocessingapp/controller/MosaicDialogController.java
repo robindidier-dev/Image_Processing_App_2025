@@ -1,7 +1,7 @@
 package imageprocessingapp.controller;
 
 import imageprocessingapp.model.ImageModel;
-import imageprocessingapp.model.filters.MosaicFilter;
+import imageprocessingapp.service.filters.MosaicFilterService;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
@@ -26,10 +26,13 @@ public class MosaicDialogController {
     @FXML private Button okButton;
 
     // Slider du MosaicDialog.fxml qui modifie le nombre de fils du kdtree
-    @FXML private Slider spinnerSlider;
+    @FXML private Slider mosaicSlider;
 
     // On récupère l'image chargée ; Propriété observable pour l'image liée à l'ImageView
     private ObjectProperty<Image> currentImage;
+
+    // Image originale pour la prévisualisation
+    private Image originalImage;
 
     // Modèle métier de l'image permettant d'accéder à l'image et à ses données
     private ImageModel imageModel;
@@ -37,11 +40,18 @@ public class MosaicDialogController {
     // Stage de la fenêtre dialog (fenêtre où l'on place l'interface, contient ce que l'utilisateur voit)
     private Stage dialogStage;
 
-
+    // Service applicatif pour appliquer l'effet mosaïque
+    private final MosaicFilterService mosaicFilterService = new MosaicFilterService();
 
      // On passe en argument une Stage pour définir l'owner de la fenêtre
+     public static void show(MainController mainController, Stage owner, 
+                ObjectProperty<Image> mainCurrentImage, ImageModel mainImageModel) throws Exception {
 
-     public static void show(MainController mainController, Stage owner, ObjectProperty<Image> mainCurrentImage, ImageModel mainImageModel) throws Exception {
+        // Vérification des paramètres d'entrée
+        if (mainImageModel == null || !mainImageModel.hasImage()
+                || mainCurrentImage == null || mainCurrentImage.get() == null) {
+            throw new IllegalArgumentException("Valid currentImage is required to show the MosaicDialog");
+        }
         FXMLLoader loader = new FXMLLoader(MosaicDialogController.class.getResource("/imageprocessingapp/dialogs/MosaicDialog.fxml"));
         Parent root = loader.load();
 
@@ -59,8 +69,8 @@ public class MosaicDialogController {
         dialogStage.initStyle(StageStyle.UNDECORATED);
 
         // Position du widget sur la fenêtre
-        dialogStage.setX(450);
-        dialogStage.setY(150);
+        dialogStage.setX(210);
+        dialogStage.setY(95);
 
         // L'apparition de la fenêtre bloque l'interaction avec d'autres éléments de l'application
         dialogStage.initModality(Modality.APPLICATION_MODAL);
@@ -79,6 +89,7 @@ public class MosaicDialogController {
     // Setter de la propriété observable image
     public void setCurrentImage(ObjectProperty<Image> CurrentImage) {
         this.currentImage = CurrentImage;
+        this.originalImage = CurrentImage != null ? CurrentImage.get() : null;
     }
 
     // Setter du modèle métier image qui va servir lors de l'application de l'effet mosaïque
@@ -101,9 +112,12 @@ public class MosaicDialogController {
         cancelButton.setOnAction(event -> cancelPressed());
         okButton.setOnAction(event -> okPressed());
 
+        if (mosaicSlider != null) {
+            mosaicSlider.setId("mosaicSlider");
+        }
 
         // Ajout d'un listener pour suivre en temps réel la valeur du slider et mettre à jour la prévisualisation à chaque changement.
-        spinnerSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+        mosaicSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             // Ce code s’exécutera à chaque changement de valeur du slider
             updatePreview(newValue.intValue());
         });
@@ -111,6 +125,12 @@ public class MosaicDialogController {
 
     // Fermeture simple de la fenêtre
     private void cancelPressed() {
+        if (currentImage != null) {
+            currentImage.set(originalImage);
+        }
+        if (imageModel != null && originalImage != null) {
+            imageModel.setImage(originalImage);
+        }
         dialogStage.close();
     }
 
@@ -126,7 +146,11 @@ public class MosaicDialogController {
 
     // Met à jour l'image mosaïque en modifiant la propriété observable
     private void updatePreview(int value) {
-        Image mosaicImage = new MosaicFilter(imageModel, value).applyMosaic(); // on utilise l'imageModel plutôt que l'image directement pour pouvoir connaître la taille de l'image, accéder aux pixels, etc.
+        // Vérification des paramètres d'entrée
+        if (imageModel == null || !imageModel.hasImage() || currentImage == null) {
+            throw new IllegalStateException("Invalid image model or current image to update the preview");
+        }
+        Image mosaicImage = mosaicFilterService.applyMosaic(imageModel, value); // on utilise l'imageModel plutôt que l'image directement pour pouvoir connaître la taille de l'image, accéder aux pixels, etc.
         currentImage.set(mosaicImage); // met à jour l'image observée, mise à jour automatique de l'ImageView liée (cf .bind() dans MainController)
     }
 }
