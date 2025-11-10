@@ -2,7 +2,6 @@ package imageprocessingapp.model.tools;
 
 import imageprocessingapp.model.ImageModel;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.effect.BlendMode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;

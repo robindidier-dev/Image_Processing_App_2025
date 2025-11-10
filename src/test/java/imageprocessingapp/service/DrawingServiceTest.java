@@ -1,6 +1,7 @@
 package imageprocessingapp.service;
 
 import imageprocessingapp.model.ImageModel;
+import imageprocessingapp.util.JavaFxTestInitializer;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
@@ -18,15 +19,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DrawingServiceTest {
 
-    private static volatile boolean jfxStarted = false;
-
     @BeforeAll
     static void initJavaFX() throws Exception {
-        if (jfxStarted) return;
-        CountDownLatch latch = new CountDownLatch(1);
-        Platform.startup(latch::countDown);
-        assertTrue(latch.await(5, TimeUnit.SECONDS), "JavaFX Platform failed to start in time");
-        jfxStarted = true;
+        JavaFxTestInitializer.initToolkit();
     }
 
     @Test

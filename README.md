@@ -11,34 +11,38 @@ Une application JavaFX de traitement d'image développée en équipe avec les fo
 ### Structure du projet
 
 ```
-src/main/java/imageprocessingapp/
-├── MainApp.java                  # Point d'entrée de l'application
-├── model/                        # Logique métier et données
-│  ├── ImageModel.java            # Modèle principal de l'image
-│  ├── ColorUtils.java            # Utilitaires pour les couleurs
-│  ├── tools/                     # Outils de dessin
-│  │  ├── Tool.java               # Interface des outils
-│  │  ├── PaintTool.java
-│  │  ├── PickerTool.java
-│  │  └── EraseTool.java
-│  ├── filters/                   # Filtres/effets (mosaïque, seam carving)
-│  │  ├── MosaicFilter.java
-│  │  ├── EnergyCalculator.java
-│  │  └── SeamCarver.java
-│  └── structures/                # Structures de données (KdTree)
-│     ├── Point2D.java
-│     └── KdTree.java
-├── view/                         # Composants d'interface utilisateur
-│  └── components/                # Widgets réutilisables
-│     └── ColorDisplay.java
-├── controller/                   # Logique de contrôle
-│  ├── MainController.java        # Contrôleur principal
-│  ├── ToolSelectorController.java# Logique ToggleGroup (outils)
-│  ├── ColorPickerDialogController.java
-│  ├── MosaicDialogController.java
-│  └── SeamCarvingDialogController.java
-└── service/
-   └── DrawingService.java
+src/main/java/
+├── module-info.java              # Définition du module Java
+└── imageprocessingapp/
+   ├── MainApp.java               # Point d'entrée de l'application
+   ├── model/                     # Logique métier et données
+   │  ├── ImageModel.java         # Modèle principal de l'image
+   │  ├── ColorUtils.java         # Utilitaires pour les couleurs
+   │  ├── tools/                  # Outils de dessin
+   │  │  ├── Tool.java            # Interface des outils
+   │  │  ├── PaintTool.java
+   │  │  ├── PickerTool.java
+   │  │  └── EraseTool.java
+   │  ├── filters/                # Filtres/effets (mosaïque, seam carving)
+   │  │  ├── MosaicFilter.java
+   │  │  ├── EnergyCalculator.java
+   │  │  └── SeamCarver.java
+   │  └── structures/             # Structures de données (KdTree)
+   │     ├── Point2D.java
+   │     └── KdTree.java
+   ├── view/                      # Composants d'interface utilisateur
+   │  └── components/             # Widgets réutilisables
+   │     └── ColorDisplay.java
+   ├── controller/                # Logique de contrôle
+   │  ├── MainController.java     
+   │  ├── ToolSelectorController.java# Logique ToggleGroup 
+   │  ├── ColorPickerDialogController.java
+   │  ├── MosaicDialogController.java
+   │  └── SeamCarvingDialogController.java
+   └── service/
+      ├── DrawingService.java
+      └── filters/
+         └── MosaicFilterService.java
 
 src/main/resources/imageprocessingapp/
 ├── view/
@@ -54,7 +58,8 @@ src/main/resources/imageprocessingapp/
 │  └── gomme.png
 └── style/
    ├── ToolBar.css
-   └── ColorPickerDialog.css
+   ├── ColorPickerDialog.css
+   └── MosaicDialog.css
 
 src/test/java/imageprocessingapp/
 ├── model/                        # Tests unitaires du model (ColorUtils, KdTree, filters)
@@ -134,6 +139,7 @@ Le pattern **Model-View-Controller** organise le code selon trois responsabilit�
 - **ImageModel** : Représente une image modifiable avec accès aux pixels
 - **MainView.fxml** : Interface utilisateur avec menu, toolbar et zone d'image
 - **DrawingService** : Opérations sur le canvas de dessin
+- **MosaicFilterService** : Service applicatif pour l’effet mosaïque
 - **ToolSelectorController** : Sélection des outils (ToggleGroup)
 - **MosaicFilter** : Effet mosaïque à partir d’un KdTree de seeds
 - **EnergyCalculator / SeamCarver** : Calcul d’énergie et suppression de seams
@@ -148,6 +154,12 @@ mvn compile
 
 # Lancer l'application
 mvn javafx:run
+```
+
+### Intégration continue locale
+```bash
+# Compiler et exécuter tous les tests avec le profil CI
+mvn -Pci verify
 ```
 
 ### Via IntelliJ IDEA

@@ -7,53 +7,50 @@
           xmlns="http://javafx.com/javafx"
           xmlns:fx="http://javafx.com/fxml"
           fx:controller="imageprocessingapp.controller.MosaicDialogController"
-          prefHeight="100.0" prefWidth="300.0"
+          prefWidth="300"
+          prefHeight="70"
           stylesheets="@../style/MosaicDialog.css">
+
+    <!-- Hauteurs fixes pour compacter la boîte -->
+    <rowConstraints>
+        <RowConstraints prefHeight="30"/>
+        <RowConstraints prefHeight="40"/>
+        <RowConstraints prefHeight="30"/>
+    </rowConstraints>
 
     <columnConstraints>
         <ColumnConstraints percentWidth="40" halignment="CENTER"/>
         <ColumnConstraints percentWidth="60" halignment="CENTER"/>
     </columnConstraints>
 
-    <rowConstraints>
-        <RowConstraints percentHeight="25"/>  <!-- Pour le label -->
-        <RowConstraints percentHeight="50"/>  <!-- Pour le slider -->
-        <RowConstraints percentHeight="25"/>  <!-- Pour les boutons -->
-    </rowConstraints>
-
-    <!-- Label au-dessus du slider -->
-    <Label text="Nombre de fils"
+    <!-- Label compact -->
+    <Label text="Nombre de cellules"
            GridPane.rowIndex="0"
            GridPane.columnIndex="0"
            GridPane.columnSpan="2"
-           style="-fx-font-size: 13px; -fx-text-fill: #555;"
+           style="-fx-font-size: 12px; -fx-text-fill: #555; -fx-padding: 0;"
            alignment="CENTER"/>
 
-    <!-- Slider centré -->
-    <Slider fx:id="spinnerSlider"
-            min="50"
-            max="500"
-            value="500"
-            showTickMarks="true"
-            showTickLabels="true"
-            majorTickUnit="50"
+    <!-- Slider compact -->
+    <Slider fx:id="mosaicSlider"
+            min="1" max="10000" value="100"
+            majorTickUnit="5000" minorTickCount="0"
+            showTickMarks="true" showTickLabels="true"
+            snapToTicks="false"
             blockIncrement="10"
-            prefWidth="250" minWidth="250" maxWidth="250"
-            styleClass="spinner-slider"
+            prefWidth="220" minWidth="140" maxWidth="220"
+            GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2"
+            GridPane.hgrow="NEVER"
+            styleClass="mosaicSlider" />
 
-            GridPane.rowIndex="1"
-            GridPane.columnIndex="0"
-            GridPane.columnSpan="2"
-    />
-
-    <!-- HBox contenant les boutons, centrée horizontalement -->
+    <!-- Boutons compacts -->
     <HBox GridPane.rowIndex="2" GridPane.columnIndex="0"
           GridPane.columnSpan="2"
           alignment="CENTER"
-          spacing="10"
+          spacing="8"
           styleClass="hbox">
-        <Button fx:id="cancelButton" text="Cancel"/>
-        <Button fx:id="okButton" text="Ok"/>
+        <Button fx:id="cancelButton" text="Cancel" minWidth="60" />
+        <Button fx:id="okButton" text="Ok" minWidth="60" />
     </HBox>
 
 </GridPane>
