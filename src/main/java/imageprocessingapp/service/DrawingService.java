@@ -1,11 +1,14 @@
 package imageprocessingapp.service;
 
 import imageprocessingapp.model.ImageModel;
+import imageprocessingapp.model.operations.Operation;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.application.Platform;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -163,6 +166,29 @@ public class DrawingService {
             try { latch.await(); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
             return ref.get();
         }
+    }
+
+    /**
+     * Applique une opération sur l'image.
+     *
+     * @param operation L'opération à appliquer
+     * @return L'image transformée, généralement une nouvelle instance de {@link WritableImage}
+     */
+    public WritableImage applyOperation(Operation operation) {
+        Objects.requireNonNull(operation, "operation");
+        AtomicReference<WritableImage> result = new AtomicReference<>();
+        runOnFxThreadSync(() -> {
+            WritableImage output = operation.apply(imageModel);
+            result.set(output);
+  
+            // le modèle vient d’être mis à jour ⇒ recalibrer le canvas
+            drawingCanvas.setWidth(output.getWidth());
+            drawingCanvas.setHeight(output.getHeight());
+            drawingCanvas.getGraphicsContext2D().clearRect(0, 0, output.getWidth(), output.getHeight());
+  
+            notifyCanvasModified(); // déclenchement MainController
+        });
+        return result.get();
     }
     
     /**

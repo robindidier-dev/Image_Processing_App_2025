@@ -2,6 +2,7 @@ package imageprocessingapp.controller;
 
 // Custom imports
 import imageprocessingapp.model.ImageModel;
+import imageprocessingapp.model.operations.SymmetryOperation;
 import imageprocessingapp.model.tools.PaintTool;
 import imageprocessingapp.model.tools.Tool;
 import imageprocessingapp.view.components.ColorDisplay;
@@ -25,6 +26,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -165,6 +167,7 @@ public class MainController {
 
         // Initialiser le service de dessin
         drawingService = new DrawingService(drawingCanvas, imageModel);
+        drawingService.setOnCanvasModified(this::markCanvasAsModified);
         // Configurer le canvas pour le dessin
         drawingService.setupCanvas();
         // Créer un canvas blanc par défaut
@@ -629,6 +632,34 @@ public class MainController {
             MosaicDialogController.show(this, (javafx.stage.Stage) imageView.getScene().getWindow(), currentImage, imageModel);
         } catch (Exception e) {
             showAlert("Erreur", "Impossible d'ouvrir le MosaicDialog : " + e.getMessage());
+        }
+    }
+
+    // ===== TRANSFORMATIONS =====
+
+    public void applyHorizontalSymmetry(ActionEvent event) {
+        applySymmetry(SymmetryOperation.Axis.HORIZONTAL);
+    }
+
+    public void applyVerticalSymmetry(ActionEvent event) {
+        applySymmetry(SymmetryOperation.Axis.VERTICAL);
+    }
+
+    private void applySymmetry(SymmetryOperation.Axis axis) {
+        try {
+            // Fusionner l'image de base et le dessin avant transformation
+            Image composite = drawingService.createCompositeImage();
+            imageModel.setImage(composite);
+            currentImage.set(composite);
+            defaultCanvasModified = false;
+
+            WritableImage flipped = drawingService.applyOperation(new SymmetryOperation(axis));
+            currentImage.set(flipped);
+            drawingService.resizeCanvasToImage(flipped);
+            drawingService.createDefaultCanvas();
+            canvasModified = true;
+        } catch (IllegalStateException e) {
+            showAlert("Symétrie impossible", e.getMessage());
         }
     }
 }

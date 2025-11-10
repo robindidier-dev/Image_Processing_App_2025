@@ -23,9 +23,10 @@
                 <MenuItem text="Open" onAction="#openImage"/>  <!-- Ouvre une image depuis le disque -->
                 <MenuItem text="Save" onAction="#saveImage"/>  <!-- Sauvegarde l'image modifiée -->
             </Menu>
-            <!-- Menu Édition (à compléter avec Seam Carving) -->
-            <Menu text="Edit"/>
-            <!-- Menu Filtres (à compléter avec Mosaic Effect) -->
+            <Menu text="Edit">
+                <MenuItem text="Horizontal Symmetry" onAction="#applyHorizontalSymmetry"/>
+                <MenuItem text="Vertical Symmetry" onAction="#applyVerticalSymmetry"/>
+            </Menu>
             <Menu text="Filters">
                 <MenuItem text="Mosaic Effect" onAction="#openMosaicDialog"/>
             </Menu>
