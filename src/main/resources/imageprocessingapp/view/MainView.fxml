@@ -26,6 +26,8 @@
             <Menu text="Edit">
                 <MenuItem text="Horizontal Symmetry" onAction="#applyHorizontalSymmetry"/>
                 <MenuItem text="Vertical Symmetry" onAction="#applyVerticalSymmetry"/>
+                <MenuItem text="Clockwise Rotation" onAction="#applyClockwiseRotation"/>
+                <MenuItem text="Counterclockwise Rotation" onAction="#applyCounterclockwiseRotation"/>
             </Menu>
             <Menu text="Filters">
                 <MenuItem text="Mosaic Effect" onAction="#openMosaicDialog"/>

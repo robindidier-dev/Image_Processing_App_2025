@@ -2,6 +2,7 @@ package imageprocessingapp.controller;
 
 // Custom imports
 import imageprocessingapp.model.ImageModel;
+import imageprocessingapp.model.operations.RotateOperation;
 import imageprocessingapp.model.operations.SymmetryOperation;
 import imageprocessingapp.model.tools.PaintTool;
 import imageprocessingapp.model.tools.Tool;
@@ -36,25 +37,25 @@ import javafx.stage.Stage;
 
 /**
  * Contrôleur principal de l'application de traitement d'image.
- * 
+ *
  * Ce contrôleur suit le pattern MVC et fait le lien entre :
  * - La View (MainView.fxml) : interface utilisateur
  * - Le Model (ImageModel, Tool, etc.) : logique métier
- * 
+ *
  * Il gère les interactions utilisateur et coordonne les différents composants.
- * 
+ *
  * Pattern Controller : gère les interactions et coordonne Model ↔ View.
  */
 public class MainController {
 
     // ===== COMPOSANTS FXML =====
-    
+
     @FXML
     private ImageView imageView;
-    
+
     @FXML
     private StackPane imageContainer;
-    
+
     @FXML
     private ColorDisplay colorDisplay;
 
@@ -62,19 +63,19 @@ public class MainController {
     private ToolSelectorController toolSelectorController;
 
     // ===== PROPRIÉTÉS OBSERVABLES =====
-    
+
     /**
      * Couleur actuellement sélectionnée pour le dessin.
      * Cette propriété est liée aux outils et au ColorDisplay.
      */
     private final ObjectProperty<Color> selectedColor = new SimpleObjectProperty<>(Color.BLACK);
-    
+
     /**
      * Image actuellement chargée dans l'application.
      * Cette propriété est liée à l'ImageView pour l'affichage.
      */
     private final ObjectProperty<Image> currentImage = new SimpleObjectProperty<>();
-    
+
     /**
      * Outil actuellement actif (pinceau, pipette, etc.).
      * Cette propriété détermine le comportement des interactions souris.
@@ -82,13 +83,13 @@ public class MainController {
     private final ObjectProperty<Tool> activeTool = new SimpleObjectProperty<>();
 
     // ===== COMPOSANTS INTERNES =====
-    
+
     /**
      * Canvas transparent superposé à l'ImageView pour le dessin.
      * Permet de dessiner par-dessus l'image sans la modifier directement.
      */
     private Canvas drawingCanvas;
-    
+
     /**
      * Modèle de l'image contenant la logique métier.
      * Gère les opérations sur les pixels et les modifications d'image.
@@ -99,7 +100,7 @@ public class MainController {
      * Service de dessin pour gérer les opérations sur le canvas.
      */
     private DrawingService drawingService;
-    
+
     /**
      * Fichier source de l'image actuelle.
      * Utilisé pour la sauvegarde et les opérations de fichier.
@@ -114,12 +115,12 @@ public class MainController {
 
 
     // ===== PROPRIÉTÉS POUR LE SUIVI DES MODIFICATIONS DES CANVAS =====
-    
+
     /**
      * Indique si le canvas a été modifié depuis la dernière sauvegarde.
      */
     private boolean canvasModified = false;
-    
+
     /**
      * Indique si l'image par défaut (canvas blanc) a été modifiée.
      */
@@ -127,32 +128,32 @@ public class MainController {
 
     // ===== GETTERS POUR LES PROPRIÉTÉS =====
 
-    public ObjectProperty<Color> selectedColorProperty() { 
-        return selectedColor; 
+    public ObjectProperty<Color> selectedColorProperty() {
+        return selectedColor;
     }
 
-    public ObjectProperty<Image> currentImageProperty() { 
-        return currentImage; 
+    public ObjectProperty<Image> currentImageProperty() {
+        return currentImage;
     }
 
-    public ObjectProperty<Tool> activeToolProperty() { 
-        return activeTool; 
+    public ObjectProperty<Tool> activeToolProperty() {
+        return activeTool;
     }
 
     public boolean isCanvasModified() {
         return canvasModified;
     }
-    
+
     public boolean isDefaultCanvasModified() {
         return defaultCanvasModified;
     }
-    
+
     public boolean hasUnsavedChanges() {
         return canvasModified || defaultCanvasModified;
     }
 
     // ===== INITIALISATION =====
-    
+
     /**
      * Méthode d'initialisation appelée automatiquement par JavaFX.
      * Configure les bindings et initialise les composants.
@@ -175,13 +176,13 @@ public class MainController {
 
         // Configurer les bindings
         setupBindings();
-        
+
         // Configurer les gestionnaires d'événements
         setupEventHandlers();
-        
+
         // Configurer les outils
         setupTools();
-        
+
         // Configurer le ColorDisplay
         setupColorDisplay();
 
@@ -206,7 +207,7 @@ public class MainController {
         drawingCanvas.setOnMousePressed(this::handleMousePressed);
         drawingCanvas.setOnMouseDragged(this::handleMouseDragged);
         drawingCanvas.setOnMouseReleased(this::handleMouseReleased);
-        
+
         // Listener pour la couleur du pinceau
         selectedColor.addListener((obs, oldColor, newColor) -> {
             Tool currentTool = activeTool.get();
@@ -229,7 +230,7 @@ public class MainController {
         if (colorDisplay != null) {
             colorDisplay.setOnColorClick(() -> openColorPicker(null));
         }
-        
+
         // Configurer ColorDisplay dans ToolSelectorController
         if (toolSelectorController != null) {
             ColorDisplay toolColorDisplay = toolSelectorController.getColorDisplay();
@@ -252,10 +253,10 @@ public class MainController {
     }
 
     // ===== GESTION DES ÉVÉNEMENTS SOURIS ET CLAVIERS =====
-    
+
     /**
      * Gère l'événement de pression de souris.
-     * 
+     *
      * @param event L'événement de souris
      */
     private void handleMousePressed(MouseEvent event) {
@@ -265,10 +266,10 @@ public class MainController {
             tool.onMousePressed(event, imageModel);
         }
     }
-    
+
     /**
      * Gère l'événement de glissement de souris.
-     * 
+     *
      * @param event L'événement de souris
      */
     private void handleMouseDragged(MouseEvent event) {
@@ -277,10 +278,10 @@ public class MainController {
             tool.onMouseDragged(event, imageModel);
         }
     }
-    
+
     /**
      * Gère l'événement de relâchement de souris.
-     * 
+     *
      * @param event L'événement de souris
      */
     private void handleMouseReleased(MouseEvent event) {
@@ -313,7 +314,7 @@ public class MainController {
             });
         }
     }
-    
+
     /**
      * Configure le gestionnaire de fermeture de fenêtre.
      */
@@ -328,15 +329,15 @@ public class MainController {
                     alert.setTitle("Modifications non sauvegardées");
                     alert.setHeaderText("Vous avez des modifications non sauvegardées.");
                     alert.setContentText("Voulez-vous sauvegarder avant de fermer ?");
-                    
+
                     javafx.scene.control.ButtonType saveButton = new javafx.scene.control.ButtonType("Sauvegarder");
                     javafx.scene.control.ButtonType discardButton = new javafx.scene.control.ButtonType("Ignorer");
                     javafx.scene.control.ButtonType cancelButton = new javafx.scene.control.ButtonType("Annuler");
-                    
+
                     alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
-                    
+
                     javafx.scene.control.ButtonType result = alert.showAndWait().orElse(cancelButton);
-                    
+
                     if (result == saveButton) {
                         saveImage();
                         // La fenêtre se fermera automatiquement après la sauvegarde
@@ -352,7 +353,7 @@ public class MainController {
     }
 
     // ===== MÉTHODES POUR LE SUIVI DES MODIFICATIONS =====
-    
+
     /**
      * Marque le canvas comme modifié.
      */
@@ -365,7 +366,7 @@ public class MainController {
             canvasModified = true;
         }
     }
-    
+
     /**
      * Marque le canvas comme non modifié (après sauvegarde).
      */
@@ -375,7 +376,7 @@ public class MainController {
     }
 
     // ===== GESTION DES FICHIERS =====
-    
+
     /**
      * Ouvre une image depuis le système de fichiers.
      * Utilise un FileChooser pour sélectionner le fichier.
@@ -388,15 +389,15 @@ public class MainController {
             alert.setTitle("Modifications non sauvegardées");
             alert.setHeaderText("Vous avez des modifications non sauvegardées.");
             alert.setContentText("Voulez-vous sauvegarder avant de continuer ?");
-            
+
             javafx.scene.control.ButtonType saveButton = new javafx.scene.control.ButtonType("Sauvegarder");
             javafx.scene.control.ButtonType discardButton = new javafx.scene.control.ButtonType("Ignorer");
             javafx.scene.control.ButtonType cancelButton = new javafx.scene.control.ButtonType("Annuler");
-            
+
             alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
-            
+
             javafx.scene.control.ButtonType result = alert.showAndWait().orElse(cancelButton);
-            
+
             if (result == saveButton) {
                 saveImage();
                 // Continuer avec l'ouverture de la nouvelle image
@@ -407,11 +408,11 @@ public class MainController {
                 return;
             }
         }
-        
+
         // Setting du FileChooser
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Ouvrir une image");
-        
+
         // Définir les extensions acceptées
         FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter(
                 "Images", "*.png", "*.jpg", "*.jpeg");
@@ -427,27 +428,27 @@ public class MainController {
                 showAlert("Extension invalide", "Veuillez sélectionner un fichier avec l'extension .png, .jpg ou .jpeg.");
                 return;
             }
-            
+
             try {
                 // Charger l'image
                 Image image = new Image(selectedFile.toURI().toString());
                 currentImage.set(image);
-                
+
                 // Mettre à jour le modèle d'image
                 imageModel.setImage(image);
-                
+
                 // Redimensionner le Canvas pour correspondre à l'image
                 drawingService.resizeCanvasToImage(image);
 
                 // Réinitialiser le canvas pour qu'il soit transparent
                 drawingService.createDefaultCanvas();
-                
+
                 // Stocker le fichier source pour la sauvegarde
                 sourceFile = selectedFile;
-                
+
                 // Réinitialiser les flags de modification
                 markCanvasAsSaved();
-                
+
             } catch (Exception e) {
                 showAlert("Erreur de chargement", "Impossible de charger l'image : " + e.getMessage());
             }
@@ -501,14 +502,14 @@ public class MainController {
                 if (format.equals("jpg")) {
                     // Pour JPEG, créer une image avec fond blanc si nécessaire
                     BufferedImage originalBuffered = SwingFXUtils.fromFXImage(compositeImage, null);
-                    
+
                     // Créer une nouvelle image RGB (pas d'alpha)
                     bufferedImage = new BufferedImage(
-                        originalBuffered.getWidth(), 
-                        originalBuffered.getHeight(), 
+                        originalBuffered.getWidth(),
+                        originalBuffered.getHeight(),
                         BufferedImage.TYPE_INT_RGB
                     );
-                    
+
                     Graphics2D g2d = bufferedImage.createGraphics();
                     // Fond blanc seulement si l'image originale avait de la transparence
                     g2d.setColor(java.awt.Color.WHITE);
@@ -522,10 +523,10 @@ public class MainController {
 
                 // Sauvegarder l'image
                 ImageIO.write(bufferedImage, format, selectedFile);
-                
+
                 // Marquer comme sauvegardé
                 markCanvasAsSaved();
-                
+
             } catch (IOException e) {
                 showAlert("Erreur de sauvegarde", "Impossible de sauvegarder l'image : " + e.getMessage());
             }
@@ -544,15 +545,15 @@ public class MainController {
             alert.setTitle("Modifications non sauvegardées");
             alert.setHeaderText("Vous avez des modifications non sauvegardées.");
             alert.setContentText("Voulez-vous sauvegarder avant de créer un nouveau canvas ?");
-            
+
             javafx.scene.control.ButtonType saveButton = new javafx.scene.control.ButtonType("Sauvegarder");
             javafx.scene.control.ButtonType discardButton = new javafx.scene.control.ButtonType("Ignorer");
             javafx.scene.control.ButtonType cancelButton = new javafx.scene.control.ButtonType("Annuler");
-            
+
             alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
-            
+
             javafx.scene.control.ButtonType result = alert.showAndWait().orElse(cancelButton);
-            
+
             if (result == saveButton) {
                 saveImage();
                 // Continuer avec la création du nouveau canvas
@@ -563,28 +564,28 @@ public class MainController {
                 return;
             }
         }
-        
+
         // Créer un nouveau canvas vide
         currentImage.set(null);
         imageModel.clear();
         sourceFile = null;
-        
+
         // Redimensionner le canvas aux dimensions par défaut
         drawingCanvas.setWidth(800);
         drawingCanvas.setHeight(600);
-        
+
         // Créer un canvas blanc par défaut
         drawingService.createDefaultCanvas();
-        
+
         // Réinitialiser les flags de modification
         markCanvasAsSaved();
     }
 
     // ===== GESTION DES OUTILS =====
-    
+
     /**
      * Ouvre le sélecteur de couleur.
-     * 
+     *
      * @param event L'événement du bouton
      */
     public void openColorPicker(ActionEvent event) {
@@ -597,10 +598,10 @@ public class MainController {
     }
 
     // ===== MÉTHODES UTILITAIRES =====
-    
+
     /**
      * Affiche une alerte avec le titre et le message donnés.
-     * 
+     *
      * @param title Le titre de l'alerte
      * @param message Le message de l'alerte
      */
@@ -635,7 +636,43 @@ public class MainController {
         }
     }
 
+
     // ===== TRANSFORMATIONS =====
+
+
+    public void applyClockwiseRotation(ActionEvent event) {
+        applyRotation(RotateOperation.Direction.CLOCKWISE);
+    }
+
+    public void applyCounterclockwiseRotation(ActionEvent event) {
+        applyRotation(RotateOperation.Direction.COUNTERCLOCKWISE);
+    }
+
+    private void applyRotation(RotateOperation.Direction direction) {
+        try {
+            // On convertit canvas + image de fond en une image avant de la faire tourner
+            WritableImage overlaySnapshot = drawingService.snapshotCanvas();
+            WritableImage rotatedOverlay = null;
+            if (overlaySnapshot != null) {
+                ImageModel overlayModel = new ImageModel(overlaySnapshot);
+                rotatedOverlay = new RotateOperation(direction).apply(overlayModel);
+            }
+
+            WritableImage rotatedBase = null;
+            if (imageModel.hasImage()) {
+                rotatedBase = drawingService.applyOperation(new RotateOperation(direction));
+                currentImage.set(rotatedBase);
+                drawingService.resizeCanvasToImage(rotatedBase);
+            }
+
+            drawingService.createDefaultCanvas();
+            if (rotatedOverlay != null) {
+                drawingService.drawImageOnCanvas(rotatedOverlay);
+            }
+        } catch (IllegalStateException e) {
+            showAlert("Rotation impossible", e.getMessage());
+        }
+    }
 
     public void applyHorizontalSymmetry(ActionEvent event) {
         applySymmetry(SymmetryOperation.Axis.HORIZONTAL);
@@ -647,17 +684,25 @@ public class MainController {
 
     private void applySymmetry(SymmetryOperation.Axis axis) {
         try {
-            // Fusionner l'image de base et le dessin avant transformation
-            Image composite = drawingService.createCompositeImage();
-            imageModel.setImage(composite);
-            currentImage.set(composite);
-            defaultCanvasModified = false;
+            // On convertit canvas + image de fond en une image avant de la symétriser
+            WritableImage overlaySnapshot = drawingService.snapshotCanvas();
+            WritableImage mirroredOverlay = null;
+            if (overlaySnapshot != null) {
+                ImageModel overlayModel = new ImageModel(overlaySnapshot);
+                mirroredOverlay = new SymmetryOperation(axis).apply(overlayModel);
+            }
 
-            WritableImage flipped = drawingService.applyOperation(new SymmetryOperation(axis));
-            currentImage.set(flipped);
-            drawingService.resizeCanvasToImage(flipped);
+            WritableImage flippedBase = null;
+            if (imageModel.hasImage()) {
+                flippedBase = drawingService.applyOperation(new SymmetryOperation(axis));
+                currentImage.set(flippedBase);
+                drawingService.resizeCanvasToImage(flippedBase);
+            }
+
             drawingService.createDefaultCanvas();
-            canvasModified = true;
+            if (mirroredOverlay != null) {
+                drawingService.drawImageOnCanvas(mirroredOverlay);
+            }
         } catch (IllegalStateException e) {
             showAlert("Symétrie impossible", e.getMessage());
         }

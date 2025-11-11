@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+import javafx.scene.SnapshotParameters;
 
 /**
  * Service centralisé pour la gestion du canvas de dessin.
@@ -167,6 +168,38 @@ public class DrawingService {
             return ref.get();
         }
     }
+
+
+    /**
+     * Capture le contenu courant du canvas en respectant la transparence.
+     *
+     * @return Une image représentant les dessins superposés au canvas
+     */
+    public WritableImage snapshotCanvas() {
+        AtomicReference<WritableImage> result = new AtomicReference<>();
+        runOnFxThreadSync(() -> {
+            SnapshotParameters params = new SnapshotParameters();
+            params.setFill(Color.TRANSPARENT);
+            result.set(drawingCanvas.snapshot(params, null));
+        });
+        return result.get();
+    }
+
+    /**
+     * Redessine une image sur le canvas en conservant la transparence.
+     *
+     * @param image L'image à dessiner (peut être un snapshot du canvas)
+     */
+    public void drawImageOnCanvas(Image image) {
+        if (image == null) return;
+        runOnFxThreadSync(() -> {
+            GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+            gc.drawImage(image, 0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+            notifyCanvasModified();
+        });
+    }
+
 
     /**
      * Applique une opération sur l'image.
