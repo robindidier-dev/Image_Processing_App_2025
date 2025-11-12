@@ -1,13 +1,21 @@
 package imageprocessingapp.service;
 
 import imageprocessingapp.model.ImageModel;
+import imageprocessingapp.model.operations.Operation;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.application.Platform;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+import javafx.scene.SnapshotParameters;
 
 /**
  * Service centralisé pour la gestion du canvas de dessin.
@@ -20,7 +28,11 @@ public class DrawingService {
     private Canvas drawingCanvas;
     private ImageModel imageModel;
     private Runnable onCanvasModified;
-    
+
+
+    private Canvas maskCanvas;
+
+
     /**
      * Initialise le service avec le canvas et le modèle d'image.
      */
@@ -164,7 +176,94 @@ public class DrawingService {
             return ref.get();
         }
     }
-    
+
+
+    /**
+     * Capture le contenu courant du canvas en respectant la transparence.
+     *
+     * @return Une image représentant les dessins superposés au canvas
+     */
+    public WritableImage snapshotCanvas() {
+        AtomicReference<WritableImage> result = new AtomicReference<>();
+        runOnFxThreadSync(() -> {
+            SnapshotParameters params = new SnapshotParameters();
+            params.setFill(Color.TRANSPARENT);
+            result.set(drawingCanvas.snapshot(params, null));
+        });
+        return result.get();
+    }
+
+    /**
+     * Redessine une image sur le canvas en conservant la transparence.
+     *
+     * @param image L'image à dessiner (peut être un snapshot du canvas)
+     */
+    public void drawImageOnCanvas(Image image) {
+        if (image == null) return;
+        runOnFxThreadSync(() -> {
+            GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+            gc.drawImage(image, 0, 0, drawingCanvas.getWidth(), drawingCanvas.getHeight());
+            notifyCanvasModified();
+        });
+    }
+
+
+    /**
+     * Applique une opération sur l'image.
+     *
+     * @param operation L'opération à appliquer
+     * @return L'image transformée, généralement une nouvelle instance de {@link WritableImage}
+     */
+    public WritableImage applyOperation(Operation operation) {
+        Objects.requireNonNull(operation, "operation");
+        AtomicReference<WritableImage> result = new AtomicReference<>();
+        runOnFxThreadSync(() -> {
+            WritableImage output = operation.apply(imageModel);
+            result.set(output);
+
+            // le modèle vient d’être mis à jour ⇒ recalibrer le canvas
+            drawingCanvas.setWidth(output.getWidth());
+            drawingCanvas.setHeight(output.getHeight());
+            drawingCanvas.getGraphicsContext2D().clearRect(0, 0, output.getWidth(), output.getHeight());
+
+            notifyCanvasModified(); // déclenchement MainController
+        });
+        return result.get();
+    }
+
+
+    public void drawOpacityMask(Rectangle2D selection) {
+        GraphicsContext gc = maskCanvas.getGraphicsContext2D();
+        double w = maskCanvas.getWidth();
+        double h = maskCanvas.getHeight();
+
+        // Effacer tout le canvas
+        gc.clearRect(0, 0, w, h);
+
+        if (selection != null) {
+            // Dessiner un rectangle semi-transparent sur toute la zone
+            gc.setFill(Color.color(0, 0, 0, 0.5));
+            gc.fillRect(0, 0, w, h);
+
+            // Effacer la zone de sélection (transparent)
+            gc.clearRect(selection.getMinX(), selection.getMinY(), selection.getWidth(), selection.getHeight());
+
+            // Dessiner un contour blanc autour de la sélection
+            gc.setStroke(Color.WHITE);
+            gc.setLineWidth(2);
+            gc.strokeRect(selection.getMinX(), selection.getMinY(), selection.getWidth(), selection.getHeight());
+        }
+        // si selection == null, on fait rien d'autre que clear : masque complètement effacé
+    }
+
+
+
+    public void setMaskCanvas(Canvas maskCanvas) {
+        this.maskCanvas = maskCanvas;
+    }
+
+
     /**
      * Retourne le canvas de dessin.
      */

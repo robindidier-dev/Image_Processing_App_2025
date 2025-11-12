@@ -69,6 +69,36 @@
 
 ---
 
+### **Etape 2.5 : Opérations géométriques**
+
+#### Paul-Antoine - Symétrie & infrastructure opérations
+
+**Branch:** `paulantoine/symmetry`
+
+- Créer le sous-package `model/operations/`
+- Introduire l'interface `Operation` et `SymmetryOperation`
+- Intégrer les actions de symétrie au `MainController` et au menu Edit
+
+#### Robin - Rotation d’image
+
+**Branch:** `robin/rotate`
+
+- Implémenter `RotateOperation` (90/180/270°) dans `model/operations/`
+- Ajouter les entrées de menu Edit correspondantes dans l’UI
+- Couvrir par des tests unitaires sur petites images
+
+#### Adrien - Outils de crop et préparation compression
+
+**Branch:** `adrien/cropping`
+
+- Implémenter `CropOperation` et l’outil de sélection associé
+- Gérer l’overlay de sélection et son intégration dans la barre d’outils
+- Exposer les actions de crop/compression via le menu Edit (sans dialogues)
+
+**Merge Etape 2.5:** symmetry → rotate → cropping
+
+---
+
 ### **Etape 3 : Seam Carving**
 
 Feature complète répartie par couche MVC.
@@ -125,6 +155,7 @@ Feature complète répartie par couche MVC.
 - [x] Implémenter KdTree avec Point2D, insertion et recherche plus proche voisin
 - [x] Créer MosaicFilter utilisant KdTree pour effet mosaïque
 - [x] Ajouter MosaicDialog et entrée menu Filter > Mosaic Effect
+- [x] Introduire `model/operations` avec Operation et SymmetryOperation
 - [ ] Implémenter EnergyCalculator pour calcul gradient des pixels
 - [ ] Créer SeamCarver avec programmation dynamique et backtracking
 - [ ] Ajouter SeamCarvingDialog et entrée menu Edit > Resize with Seam Carving

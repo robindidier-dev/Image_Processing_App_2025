@@ -3,6 +3,7 @@
 Une application JavaFX de traitement d'image développée en équipe avec les fonctionnalités suivantes :
 - **Outils de dessin** (pinceau, pipette, gomme)
 - **Effet mosaïque** utilisant un **KdTree**
+- **Opérations géométriques** (symétries, rotations, crop, compression)
 - **Seam Carving** pour redimensionner intelligemment les images
 - **Système de couleurs** avec sélecteur RGB
 
@@ -23,6 +24,13 @@ src/main/java/
    │  │  ├── PaintTool.java
    │  │  ├── PickerTool.java
    │  │  └── EraseTool.java
+   │  ├── operations/             # Transformations (symétrie, rotation, crop, compression)
+   │  │  ├── Operation.java
+   │  │  ├── SymmetryOperation.java
+   │  │  ├── RotateOperation.java
+   │  │  ├── CropOperation.java
+   │  │  └── CompressionOperation.java
+            
    │  ├── filters/                # Filtres/effets (mosaïque, seam carving)
    │  │  ├── MosaicFilter.java
    │  │  ├── EnergyCalculator.java

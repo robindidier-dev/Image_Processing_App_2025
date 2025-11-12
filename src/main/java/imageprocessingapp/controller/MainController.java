@@ -2,8 +2,12 @@ package imageprocessingapp.controller;
 
 // Custom imports
 import imageprocessingapp.model.ImageModel;
+import imageprocessingapp.model.operations.SymmetryOperation;
+import imageprocessingapp.model.operations.CropOperation;
+import imageprocessingapp.model.operations.RotateOperation;
 import imageprocessingapp.model.tools.PaintTool;
 import imageprocessingapp.model.tools.Tool;
+import imageprocessingapp.model.tools.edit.CropTool;
 import imageprocessingapp.view.components.ColorDisplay;
 import imageprocessingapp.service.DrawingService;
 
@@ -16,21 +20,25 @@ import javax.imageio.ImageIO;
 
 // JavaFX imports
 import javafx.event.ActionEvent;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
 
 /**
  * Contrôleur principal de l'application de traitement d'image.
@@ -111,6 +119,9 @@ public class MainController {
     private PaintTool paintTool;
 
 
+    // Outil pour rogner : utilisation des méthodes onMouseDragged, onMouseReleased, etc -> outil
+    private CropTool cropTool;
+
     // ===== PROPRIÉTÉS POUR LE SUIVI DES MODIFICATIONS DES CANVAS =====
     
     /**
@@ -122,6 +133,11 @@ public class MainController {
      * Indique si l'image par défaut (canvas blanc) a été modifiée.
      */
     private boolean defaultCanvasModified = false;
+
+
+    @FXML
+    private Canvas maskCanvas; // pour l'opacité lors du crop
+
 
     // ===== GETTERS POUR LES PROPRIÉTÉS =====
 
@@ -140,7 +156,7 @@ public class MainController {
     public boolean isCanvasModified() {
         return canvasModified;
     }
-    
+
     public boolean isDefaultCanvasModified() {
         return defaultCanvasModified;
     }
@@ -157,39 +173,52 @@ public class MainController {
      */
     @FXML
     public void initialize() {
-        // Créer le Canvas transparent pour le dessin
         setupDrawingCanvas();
-
-        // Initialiser le modèle d'image
-        imageModel = new ImageModel();
-
-        // Initialiser le service de dessin
-        drawingService = new DrawingService(drawingCanvas, imageModel);
-        // Configurer le canvas pour le dessin
-        drawingService.setupCanvas();
-        // Créer un canvas blanc par défaut
-        drawingService.createDefaultCanvas();
-
-        // Configurer les bindings
+        setupImageModel();
+        setupDrawingService();
+        setupMaskCanvas();
         setupBindings();
-        
-        // Configurer les gestionnaires d'événements
         setupEventHandlers();
-        
-        // Configurer les outils
         setupTools();
-        
-        // Configurer le ColorDisplay
         setupColorDisplay();
-
-        // Configurer les raccourcis clavier et la fermeture de fenêtre
-        // Ces méthodes doivent être appelées après que la scène soit disponible
         setupDelayedInitialization();
     }
 
+    private void setupImageModel() {
+        imageModel = new ImageModel();
+    }
+
+    private void setupDrawingService() {
+        drawingService = new DrawingService(drawingCanvas, imageModel);
+        drawingService.setupCanvas();
+        drawingService.createDefaultCanvas();
+        drawingService.setMaskCanvas(maskCanvas);
+
+        // Callback pour les modifications du canvas
+        drawingService.setOnCanvasModified(this::markCanvasAsModified);
+    }
+
+    private void setupMaskCanvas() {
+        if (maskCanvas != null && drawingCanvas != null) {
+            // Synchroniser la taille initiale
+            maskCanvas.setWidth(drawingCanvas.getWidth());
+            maskCanvas.setHeight(drawingCanvas.getHeight());
+
+            // Listeners pour synchronisation automatique
+            drawingCanvas.widthProperty().addListener((obs, oldVal, newVal) -> {
+                maskCanvas.setWidth(newVal.doubleValue());
+            });
+
+            drawingCanvas.heightProperty().addListener((obs, oldVal, newVal) -> {
+                maskCanvas.setHeight(newVal.doubleValue());
+            });
+        }
+    }
+
+
     private void setupDrawingCanvas() {
         drawingCanvas = new Canvas(800, 600);
-        imageContainer.getChildren().add(drawingCanvas);
+        imageContainer.getChildren().add(1,drawingCanvas); //le "1" correspond à l'index : ImageView < drawingCanvas < maskCanvas (pour le crop)
     }
 
     private void setupBindings() {
@@ -284,6 +313,11 @@ public class MainController {
         Tool tool = activeTool.get();
         if (tool != null) {
             tool.onMouseReleased(event, imageModel);
+        }
+
+        // Par exemple ici tu peux appeler applyCropping() si l'outil est CropTool
+        if (tool instanceof CropTool) {
+            applyCropping();
         }
     }
 
@@ -501,9 +535,9 @@ public class MainController {
                     
                     // Créer une nouvelle image RGB (pas d'alpha)
                     bufferedImage = new BufferedImage(
-                        originalBuffered.getWidth(), 
-                        originalBuffered.getHeight(), 
-                        BufferedImage.TYPE_INT_RGB
+                            originalBuffered.getWidth(),
+                            originalBuffered.getHeight(),
+                            BufferedImage.TYPE_INT_RGB
                     );
                     
                     Graphics2D g2d = bufferedImage.createGraphics();
@@ -597,8 +631,8 @@ public class MainController {
     
     /**
      * Affiche une alerte avec le titre et le message donnés.
-     * 
-     * @param title Le titre de l'alerte
+     *
+     * @param title   Le titre de l'alerte
      * @param message Le message de l'alerte
      */
     private void showAlert(String title, String message) {
@@ -631,4 +665,233 @@ public class MainController {
             showAlert("Erreur", "Impossible d'ouvrir le MosaicDialog : " + e.getMessage());
         }
     }
+
+
+
+
+    // ===== TRANSFORMATIONS =====
+
+
+    public void applyClockwiseRotation(ActionEvent event) {
+        applyRotation(RotateOperation.Direction.CLOCKWISE);
+    }
+
+    public void applyCounterclockwiseRotation(ActionEvent event) {
+        applyRotation(RotateOperation.Direction.COUNTERCLOCKWISE);
+    }
+
+    private void applyRotation(RotateOperation.Direction direction) {
+        try {
+            // On convertit canvas + image de fond en une image avant de la faire tourner
+            WritableImage overlaySnapshot = drawingService.snapshotCanvas();
+            WritableImage rotatedOverlay = null;
+            if (overlaySnapshot != null) {
+                ImageModel overlayModel = new ImageModel(overlaySnapshot);
+                rotatedOverlay = new RotateOperation(direction).apply(overlayModel);
+            }
+
+            WritableImage rotatedBase = null;
+            if (imageModel.hasImage()) {
+                rotatedBase = drawingService.applyOperation(new RotateOperation(direction));
+                currentImage.set(rotatedBase);
+                drawingService.resizeCanvasToImage(rotatedBase);
+            }
+
+            drawingService.createDefaultCanvas();
+            if (rotatedOverlay != null) {
+                drawingService.drawImageOnCanvas(rotatedOverlay);
+            }
+        } catch (IllegalStateException e) {
+            showAlert("Rotation impossible", e.getMessage());
+        }
+    }
+
+    public void applyHorizontalSymmetry(ActionEvent event) {
+        applySymmetry(SymmetryOperation.Axis.HORIZONTAL);
+    }
+
+    public void applyVerticalSymmetry(ActionEvent event) {
+        applySymmetry(SymmetryOperation.Axis.VERTICAL);
+    }
+
+    private void applySymmetry(SymmetryOperation.Axis axis) {
+        try {
+            // On convertit canvas + image de fond en une image avant de la symétriser
+            WritableImage overlaySnapshot = drawingService.snapshotCanvas();
+            WritableImage mirroredOverlay = null;
+            if (overlaySnapshot != null) {
+                ImageModel overlayModel = new ImageModel(overlaySnapshot);
+                mirroredOverlay = new SymmetryOperation(axis).apply(overlayModel);
+            }
+
+            WritableImage flippedBase = null;
+            if (imageModel.hasImage()) {
+                flippedBase = drawingService.applyOperation(new SymmetryOperation(axis));
+                currentImage.set(flippedBase);
+                drawingService.resizeCanvasToImage(flippedBase);
+            }
+
+            drawingService.createDefaultCanvas();
+            if (mirroredOverlay != null) {
+                drawingService.drawImageOnCanvas(mirroredOverlay);
+            }
+        } catch (IllegalStateException e) {
+            showAlert("Symétrie impossible", e.getMessage());
+        }
+    }
+
+    /**
+     * Active l'outil de crop et désélectionne l'outil précédent.
+     */
+    public void startCropping() {
+        // Désélectionner visuellement l'outil actif
+        if (toolSelectorController != null) {
+            toolSelectorController.deselectAllTools();
+        }
+
+        // Créer et configurer l'outil crop
+        cropTool = new CropTool();
+        cropTool.setImageView(this.imageView);
+        cropTool.setDrawingService(drawingService);
+        cropTool.setMaskCanvas(maskCanvas);
+        activeTool.set(cropTool);
+    }
+
+    /**
+     * Applique le crop sur l'image composite (fond + dessin).
+     */
+    public void applyCropping() {
+        if (cropTool == null) return;
+
+        Rectangle2D cropArea = cropTool.getCropArea();
+        if (cropArea == null) return;
+
+        try {
+            // Créer une image composite (fond + canvas)
+            WritableImage compositeSnapshot = createCompositeSnapshot();
+            if (compositeSnapshot == null) {
+                showAlert("Cropping impossible", "Impossible de créer l'image composite.");
+                return;
+            }
+
+            // Convertir les coordonnées d'affichage vers coordonnées image native
+            Rectangle2D scaledCropArea = convertCropAreaToImageCoordinates(cropArea, compositeSnapshot);
+            if (scaledCropArea == null) {
+                showAlert("Cropping impossible", "Zone de sélection invalide.");
+                return;
+            }
+
+            // Effectuer le crop
+            WritableImage croppedImage = performCrop(compositeSnapshot, scaledCropArea);
+            if (croppedImage != null) {
+                updateImageAfterCrop(croppedImage);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Cropping impossible", e.getMessage());
+        }
+    }
+
+    /**
+     * Crée une image composite fusionnant le fond et le canvas.
+     *
+     * @return L'image composite ou null en cas d'erreur
+     */
+    private WritableImage createCompositeSnapshot() {
+        Image compositeImage = drawingService.createCompositeImage();
+        if (compositeImage == null) return null;
+
+        if (compositeImage instanceof WritableImage) {
+            return (WritableImage) compositeImage;
+        }
+
+        // Convertir en WritableImage si nécessaire
+        return new WritableImage(
+                compositeImage.getPixelReader(),
+                (int) compositeImage.getWidth(),
+                (int) compositeImage.getHeight()
+        );
+    }
+
+    /**
+     * Convertit les coordonnées de crop de l'affichage vers l'image native.
+     * Applique le facteur d'échelle et clampe aux dimensions de l'image.
+     *
+     * @param cropArea Zone de crop en coordonnées d'affichage
+     * @param image Image native de référence
+     * @return Zone de crop en coordonnées image ou null si invalide
+     */
+    private Rectangle2D convertCropAreaToImageCoordinates(Rectangle2D cropArea, WritableImage image) {
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
+        double displayWidth = drawingCanvas.getWidth();
+        double displayHeight = drawingCanvas.getHeight();
+
+        // Calculer les facteurs d'échelle
+        double scaleX = imageWidth / displayWidth;
+        double scaleY = imageHeight / displayHeight;
+
+        // Appliquer l'échelle aux coordonnées de crop
+        double scaledX = cropArea.getMinX() * scaleX;
+        double scaledY = cropArea.getMinY() * scaleY;
+        double scaledWidth = cropArea.getWidth() * scaleX;
+        double scaledHeight = cropArea.getHeight() * scaleY;
+
+        // Clamper aux dimensions de l'image
+        double x = Math.max(0, Math.min(scaledX, imageWidth - 1));
+        double y = Math.max(0, Math.min(scaledY, imageHeight - 1));
+        double w = Math.min(scaledWidth, imageWidth - x);
+        double h = Math.min(scaledHeight, imageHeight - y);
+
+        // Vérifier validité
+        if (w <= 0 || h <= 0) return null;
+
+        return new Rectangle2D(x, y, w, h);
+    }
+
+    /**
+     * Effectue l'opération de crop sur l'image.
+     *
+     * @param image Image à cropper
+     * @param cropArea Zone de crop en coordonnées image
+     * @return Image croppée
+     */
+    private WritableImage performCrop(WritableImage image, Rectangle2D cropArea) {
+        ImageModel snapshotModel = new ImageModel(image);
+        return new CropOperation(cropArea).apply(snapshotModel);
+    }
+
+    /**
+     * Met à jour l'interface après le crop : image, canvas et masque.
+     * Désactive l'outil crop après utilisation.
+     *
+     * @param croppedImage Image résultant du crop
+     */
+    private void updateImageAfterCrop(WritableImage croppedImage) {
+        // Mettre à jour l'image affichée
+        currentImage.set(croppedImage);
+        imageModel.setImage(croppedImage);
+
+        // Redimensionner le canvas de dessin
+        drawingService.resizeCanvasToImage(croppedImage);
+
+        // Redimensionner et effacer le maskCanvas
+        if (maskCanvas != null) {
+            maskCanvas.setWidth(drawingCanvas.getWidth());
+            maskCanvas.setHeight(drawingCanvas.getHeight());
+            GraphicsContext gc = maskCanvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, maskCanvas.getWidth(), maskCanvas.getHeight());
+        }
+
+        // Réinitialiser le canvas de dessin
+        drawingService.createDefaultCanvas();
+        markCanvasAsModified();
+
+        // Désactiver l'outil crop
+        activeTool.set(null);
+        cropTool = null;
+    }
+
+
+
 }
