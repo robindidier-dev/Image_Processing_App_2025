@@ -2,10 +2,12 @@ package imageprocessingapp.controller;
 
 // Custom imports
 import imageprocessingapp.model.ImageModel;
-import imageprocessingapp.model.operations.RotateOperation;
 import imageprocessingapp.model.operations.SymmetryOperation;
+import imageprocessingapp.model.operations.CropOperation;
+import imageprocessingapp.model.operations.RotateOperation;
 import imageprocessingapp.model.tools.PaintTool;
 import imageprocessingapp.model.tools.Tool;
+import imageprocessingapp.model.tools.edit.CropTool;
 import imageprocessingapp.view.components.ColorDisplay;
 import imageprocessingapp.service.DrawingService;
 
@@ -18,11 +20,13 @@ import javax.imageio.ImageIO;
 
 // JavaFX imports
 import javafx.event.ActionEvent;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
@@ -35,27 +39,28 @@ import javafx.stage.FileChooser;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+
 /**
  * Contrôleur principal de l'application de traitement d'image.
- *
+ * 
  * Ce contrôleur suit le pattern MVC et fait le lien entre :
  * - La View (MainView.fxml) : interface utilisateur
  * - Le Model (ImageModel, Tool, etc.) : logique métier
- *
+ * 
  * Il gère les interactions utilisateur et coordonne les différents composants.
- *
+ * 
  * Pattern Controller : gère les interactions et coordonne Model ↔ View.
  */
 public class MainController {
 
     // ===== COMPOSANTS FXML =====
-
+    
     @FXML
     private ImageView imageView;
-
+    
     @FXML
     private StackPane imageContainer;
-
+    
     @FXML
     private ColorDisplay colorDisplay;
 
@@ -63,19 +68,19 @@ public class MainController {
     private ToolSelectorController toolSelectorController;
 
     // ===== PROPRIÉTÉS OBSERVABLES =====
-
+    
     /**
      * Couleur actuellement sélectionnée pour le dessin.
      * Cette propriété est liée aux outils et au ColorDisplay.
      */
     private final ObjectProperty<Color> selectedColor = new SimpleObjectProperty<>(Color.BLACK);
-
+    
     /**
      * Image actuellement chargée dans l'application.
      * Cette propriété est liée à l'ImageView pour l'affichage.
      */
     private final ObjectProperty<Image> currentImage = new SimpleObjectProperty<>();
-
+    
     /**
      * Outil actuellement actif (pinceau, pipette, etc.).
      * Cette propriété détermine le comportement des interactions souris.
@@ -83,13 +88,13 @@ public class MainController {
     private final ObjectProperty<Tool> activeTool = new SimpleObjectProperty<>();
 
     // ===== COMPOSANTS INTERNES =====
-
+    
     /**
      * Canvas transparent superposé à l'ImageView pour le dessin.
      * Permet de dessiner par-dessus l'image sans la modifier directement.
      */
     private Canvas drawingCanvas;
-
+    
     /**
      * Modèle de l'image contenant la logique métier.
      * Gère les opérations sur les pixels et les modifications d'image.
@@ -100,7 +105,7 @@ public class MainController {
      * Service de dessin pour gérer les opérations sur le canvas.
      */
     private DrawingService drawingService;
-
+    
     /**
      * Fichier source de l'image actuelle.
      * Utilisé pour la sauvegarde et les opérations de fichier.
@@ -114,30 +119,38 @@ public class MainController {
     private PaintTool paintTool;
 
 
-    // ===== PROPRIÉTÉS POUR LE SUIVI DES MODIFICATIONS DES CANVAS =====
+    // Outil pour rogner : utilisation des méthodes onMouseDragged, onMouseReleased, etc -> outil
+    private CropTool cropTool;
 
+    // ===== PROPRIÉTÉS POUR LE SUIVI DES MODIFICATIONS DES CANVAS =====
+    
     /**
      * Indique si le canvas a été modifié depuis la dernière sauvegarde.
      */
     private boolean canvasModified = false;
-
+    
     /**
      * Indique si l'image par défaut (canvas blanc) a été modifiée.
      */
     private boolean defaultCanvasModified = false;
 
+
+    @FXML
+    private Canvas maskCanvas; // pour l'opacité lors du crop
+
+
     // ===== GETTERS POUR LES PROPRIÉTÉS =====
 
-    public ObjectProperty<Color> selectedColorProperty() {
-        return selectedColor;
+    public ObjectProperty<Color> selectedColorProperty() { 
+        return selectedColor; 
     }
 
-    public ObjectProperty<Image> currentImageProperty() {
-        return currentImage;
+    public ObjectProperty<Image> currentImageProperty() { 
+        return currentImage; 
     }
 
-    public ObjectProperty<Tool> activeToolProperty() {
-        return activeTool;
+    public ObjectProperty<Tool> activeToolProperty() { 
+        return activeTool; 
     }
 
     public boolean isCanvasModified() {
@@ -147,53 +160,65 @@ public class MainController {
     public boolean isDefaultCanvasModified() {
         return defaultCanvasModified;
     }
-
+    
     public boolean hasUnsavedChanges() {
         return canvasModified || defaultCanvasModified;
     }
 
     // ===== INITIALISATION =====
-
+    
     /**
      * Méthode d'initialisation appelée automatiquement par JavaFX.
      * Configure les bindings et initialise les composants.
      */
     @FXML
     public void initialize() {
-        // Créer le Canvas transparent pour le dessin
         setupDrawingCanvas();
-
-        // Initialiser le modèle d'image
-        imageModel = new ImageModel();
-
-        // Initialiser le service de dessin
-        drawingService = new DrawingService(drawingCanvas, imageModel);
-        drawingService.setOnCanvasModified(this::markCanvasAsModified);
-        // Configurer le canvas pour le dessin
-        drawingService.setupCanvas();
-        // Créer un canvas blanc par défaut
-        drawingService.createDefaultCanvas();
-
-        // Configurer les bindings
+        setupImageModel();
+        setupDrawingService();
+        setupMaskCanvas();
         setupBindings();
-
-        // Configurer les gestionnaires d'événements
         setupEventHandlers();
-
-        // Configurer les outils
         setupTools();
-
-        // Configurer le ColorDisplay
         setupColorDisplay();
-
-        // Configurer les raccourcis clavier et la fermeture de fenêtre
-        // Ces méthodes doivent être appelées après que la scène soit disponible
         setupDelayedInitialization();
     }
 
+    private void setupImageModel() {
+        imageModel = new ImageModel();
+    }
+
+    private void setupDrawingService() {
+        drawingService = new DrawingService(drawingCanvas, imageModel);
+        drawingService.setupCanvas();
+        drawingService.createDefaultCanvas();
+        drawingService.setMaskCanvas(maskCanvas);
+
+        // Callback pour les modifications du canvas
+        drawingService.setOnCanvasModified(this::markCanvasAsModified);
+    }
+
+    private void setupMaskCanvas() {
+        if (maskCanvas != null && drawingCanvas != null) {
+            // Synchroniser la taille initiale
+            maskCanvas.setWidth(drawingCanvas.getWidth());
+            maskCanvas.setHeight(drawingCanvas.getHeight());
+
+            // Listeners pour synchronisation automatique
+            drawingCanvas.widthProperty().addListener((obs, oldVal, newVal) -> {
+                maskCanvas.setWidth(newVal.doubleValue());
+            });
+
+            drawingCanvas.heightProperty().addListener((obs, oldVal, newVal) -> {
+                maskCanvas.setHeight(newVal.doubleValue());
+            });
+        }
+    }
+
+
     private void setupDrawingCanvas() {
         drawingCanvas = new Canvas(800, 600);
-        imageContainer.getChildren().add(drawingCanvas);
+        imageContainer.getChildren().add(1,drawingCanvas); //le "1" correspond à l'index : ImageView < drawingCanvas < maskCanvas (pour le crop)
     }
 
     private void setupBindings() {
@@ -207,7 +232,7 @@ public class MainController {
         drawingCanvas.setOnMousePressed(this::handleMousePressed);
         drawingCanvas.setOnMouseDragged(this::handleMouseDragged);
         drawingCanvas.setOnMouseReleased(this::handleMouseReleased);
-
+        
         // Listener pour la couleur du pinceau
         selectedColor.addListener((obs, oldColor, newColor) -> {
             Tool currentTool = activeTool.get();
@@ -230,7 +255,7 @@ public class MainController {
         if (colorDisplay != null) {
             colorDisplay.setOnColorClick(() -> openColorPicker(null));
         }
-
+        
         // Configurer ColorDisplay dans ToolSelectorController
         if (toolSelectorController != null) {
             ColorDisplay toolColorDisplay = toolSelectorController.getColorDisplay();
@@ -253,10 +278,10 @@ public class MainController {
     }
 
     // ===== GESTION DES ÉVÉNEMENTS SOURIS ET CLAVIERS =====
-
+    
     /**
      * Gère l'événement de pression de souris.
-     *
+     * 
      * @param event L'événement de souris
      */
     private void handleMousePressed(MouseEvent event) {
@@ -266,10 +291,10 @@ public class MainController {
             tool.onMousePressed(event, imageModel);
         }
     }
-
+    
     /**
      * Gère l'événement de glissement de souris.
-     *
+     * 
      * @param event L'événement de souris
      */
     private void handleMouseDragged(MouseEvent event) {
@@ -278,16 +303,21 @@ public class MainController {
             tool.onMouseDragged(event, imageModel);
         }
     }
-
+    
     /**
      * Gère l'événement de relâchement de souris.
-     *
+     * 
      * @param event L'événement de souris
      */
     private void handleMouseReleased(MouseEvent event) {
         Tool tool = activeTool.get();
         if (tool != null) {
             tool.onMouseReleased(event, imageModel);
+        }
+
+        // Par exemple ici tu peux appeler applyCropping() si l'outil est CropTool
+        if (tool instanceof CropTool) {
+            applyCropping();
         }
     }
 
@@ -314,7 +344,7 @@ public class MainController {
             });
         }
     }
-
+    
     /**
      * Configure le gestionnaire de fermeture de fenêtre.
      */
@@ -329,15 +359,15 @@ public class MainController {
                     alert.setTitle("Modifications non sauvegardées");
                     alert.setHeaderText("Vous avez des modifications non sauvegardées.");
                     alert.setContentText("Voulez-vous sauvegarder avant de fermer ?");
-
+                    
                     javafx.scene.control.ButtonType saveButton = new javafx.scene.control.ButtonType("Sauvegarder");
                     javafx.scene.control.ButtonType discardButton = new javafx.scene.control.ButtonType("Ignorer");
                     javafx.scene.control.ButtonType cancelButton = new javafx.scene.control.ButtonType("Annuler");
-
+                    
                     alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
-
+                    
                     javafx.scene.control.ButtonType result = alert.showAndWait().orElse(cancelButton);
-
+                    
                     if (result == saveButton) {
                         saveImage();
                         // La fenêtre se fermera automatiquement après la sauvegarde
@@ -353,7 +383,7 @@ public class MainController {
     }
 
     // ===== MÉTHODES POUR LE SUIVI DES MODIFICATIONS =====
-
+    
     /**
      * Marque le canvas comme modifié.
      */
@@ -366,7 +396,7 @@ public class MainController {
             canvasModified = true;
         }
     }
-
+    
     /**
      * Marque le canvas comme non modifié (après sauvegarde).
      */
@@ -376,7 +406,7 @@ public class MainController {
     }
 
     // ===== GESTION DES FICHIERS =====
-
+    
     /**
      * Ouvre une image depuis le système de fichiers.
      * Utilise un FileChooser pour sélectionner le fichier.
@@ -389,15 +419,15 @@ public class MainController {
             alert.setTitle("Modifications non sauvegardées");
             alert.setHeaderText("Vous avez des modifications non sauvegardées.");
             alert.setContentText("Voulez-vous sauvegarder avant de continuer ?");
-
+            
             javafx.scene.control.ButtonType saveButton = new javafx.scene.control.ButtonType("Sauvegarder");
             javafx.scene.control.ButtonType discardButton = new javafx.scene.control.ButtonType("Ignorer");
             javafx.scene.control.ButtonType cancelButton = new javafx.scene.control.ButtonType("Annuler");
-
+            
             alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
-
+            
             javafx.scene.control.ButtonType result = alert.showAndWait().orElse(cancelButton);
-
+            
             if (result == saveButton) {
                 saveImage();
                 // Continuer avec l'ouverture de la nouvelle image
@@ -408,11 +438,11 @@ public class MainController {
                 return;
             }
         }
-
+        
         // Setting du FileChooser
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Ouvrir une image");
-
+        
         // Définir les extensions acceptées
         FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter(
                 "Images", "*.png", "*.jpg", "*.jpeg");
@@ -428,27 +458,27 @@ public class MainController {
                 showAlert("Extension invalide", "Veuillez sélectionner un fichier avec l'extension .png, .jpg ou .jpeg.");
                 return;
             }
-
+            
             try {
                 // Charger l'image
                 Image image = new Image(selectedFile.toURI().toString());
                 currentImage.set(image);
-
+                
                 // Mettre à jour le modèle d'image
                 imageModel.setImage(image);
-
+                
                 // Redimensionner le Canvas pour correspondre à l'image
                 drawingService.resizeCanvasToImage(image);
 
                 // Réinitialiser le canvas pour qu'il soit transparent
                 drawingService.createDefaultCanvas();
-
+                
                 // Stocker le fichier source pour la sauvegarde
                 sourceFile = selectedFile;
-
+                
                 // Réinitialiser les flags de modification
                 markCanvasAsSaved();
-
+                
             } catch (Exception e) {
                 showAlert("Erreur de chargement", "Impossible de charger l'image : " + e.getMessage());
             }
@@ -502,14 +532,14 @@ public class MainController {
                 if (format.equals("jpg")) {
                     // Pour JPEG, créer une image avec fond blanc si nécessaire
                     BufferedImage originalBuffered = SwingFXUtils.fromFXImage(compositeImage, null);
-
+                    
                     // Créer une nouvelle image RGB (pas d'alpha)
                     bufferedImage = new BufferedImage(
-                        originalBuffered.getWidth(),
-                        originalBuffered.getHeight(),
-                        BufferedImage.TYPE_INT_RGB
+                            originalBuffered.getWidth(),
+                            originalBuffered.getHeight(),
+                            BufferedImage.TYPE_INT_RGB
                     );
-
+                    
                     Graphics2D g2d = bufferedImage.createGraphics();
                     // Fond blanc seulement si l'image originale avait de la transparence
                     g2d.setColor(java.awt.Color.WHITE);
@@ -523,10 +553,10 @@ public class MainController {
 
                 // Sauvegarder l'image
                 ImageIO.write(bufferedImage, format, selectedFile);
-
+                
                 // Marquer comme sauvegardé
                 markCanvasAsSaved();
-
+                
             } catch (IOException e) {
                 showAlert("Erreur de sauvegarde", "Impossible de sauvegarder l'image : " + e.getMessage());
             }
@@ -545,15 +575,15 @@ public class MainController {
             alert.setTitle("Modifications non sauvegardées");
             alert.setHeaderText("Vous avez des modifications non sauvegardées.");
             alert.setContentText("Voulez-vous sauvegarder avant de créer un nouveau canvas ?");
-
+            
             javafx.scene.control.ButtonType saveButton = new javafx.scene.control.ButtonType("Sauvegarder");
             javafx.scene.control.ButtonType discardButton = new javafx.scene.control.ButtonType("Ignorer");
             javafx.scene.control.ButtonType cancelButton = new javafx.scene.control.ButtonType("Annuler");
-
+            
             alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
-
+            
             javafx.scene.control.ButtonType result = alert.showAndWait().orElse(cancelButton);
-
+            
             if (result == saveButton) {
                 saveImage();
                 // Continuer avec la création du nouveau canvas
@@ -564,28 +594,28 @@ public class MainController {
                 return;
             }
         }
-
+        
         // Créer un nouveau canvas vide
         currentImage.set(null);
         imageModel.clear();
         sourceFile = null;
-
+        
         // Redimensionner le canvas aux dimensions par défaut
         drawingCanvas.setWidth(800);
         drawingCanvas.setHeight(600);
-
+        
         // Créer un canvas blanc par défaut
         drawingService.createDefaultCanvas();
-
+        
         // Réinitialiser les flags de modification
         markCanvasAsSaved();
     }
 
     // ===== GESTION DES OUTILS =====
-
+    
     /**
      * Ouvre le sélecteur de couleur.
-     *
+     * 
      * @param event L'événement du bouton
      */
     public void openColorPicker(ActionEvent event) {
@@ -598,11 +628,11 @@ public class MainController {
     }
 
     // ===== MÉTHODES UTILITAIRES =====
-
+    
     /**
      * Affiche une alerte avec le titre et le message donnés.
      *
-     * @param title Le titre de l'alerte
+     * @param title   Le titre de l'alerte
      * @param message Le message de l'alerte
      */
     private void showAlert(String title, String message) {
@@ -635,6 +665,8 @@ public class MainController {
             showAlert("Erreur", "Impossible d'ouvrir le MosaicDialog : " + e.getMessage());
         }
     }
+
+
 
 
     // ===== TRANSFORMATIONS =====
@@ -707,4 +739,159 @@ public class MainController {
             showAlert("Symétrie impossible", e.getMessage());
         }
     }
+
+    /**
+     * Active l'outil de crop et désélectionne l'outil précédent.
+     */
+    public void startCropping() {
+        // Désélectionner visuellement l'outil actif
+        if (toolSelectorController != null) {
+            toolSelectorController.deselectAllTools();
+        }
+
+        // Créer et configurer l'outil crop
+        cropTool = new CropTool();
+        cropTool.setImageView(this.imageView);
+        cropTool.setDrawingService(drawingService);
+        cropTool.setMaskCanvas(maskCanvas);
+        activeTool.set(cropTool);
+    }
+
+    /**
+     * Applique le crop sur l'image composite (fond + dessin).
+     */
+    public void applyCropping() {
+        if (cropTool == null) return;
+
+        Rectangle2D cropArea = cropTool.getCropArea();
+        if (cropArea == null) return;
+
+        try {
+            // Créer une image composite (fond + canvas)
+            WritableImage compositeSnapshot = createCompositeSnapshot();
+            if (compositeSnapshot == null) {
+                showAlert("Cropping impossible", "Impossible de créer l'image composite.");
+                return;
+            }
+
+            // Convertir les coordonnées d'affichage vers coordonnées image native
+            Rectangle2D scaledCropArea = convertCropAreaToImageCoordinates(cropArea, compositeSnapshot);
+            if (scaledCropArea == null) {
+                showAlert("Cropping impossible", "Zone de sélection invalide.");
+                return;
+            }
+
+            // Effectuer le crop
+            WritableImage croppedImage = performCrop(compositeSnapshot, scaledCropArea);
+            if (croppedImage != null) {
+                updateImageAfterCrop(croppedImage);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Cropping impossible", e.getMessage());
+        }
+    }
+
+    /**
+     * Crée une image composite fusionnant le fond et le canvas.
+     *
+     * @return L'image composite ou null en cas d'erreur
+     */
+    private WritableImage createCompositeSnapshot() {
+        Image compositeImage = drawingService.createCompositeImage();
+        if (compositeImage == null) return null;
+
+        if (compositeImage instanceof WritableImage) {
+            return (WritableImage) compositeImage;
+        }
+
+        // Convertir en WritableImage si nécessaire
+        return new WritableImage(
+                compositeImage.getPixelReader(),
+                (int) compositeImage.getWidth(),
+                (int) compositeImage.getHeight()
+        );
+    }
+
+    /**
+     * Convertit les coordonnées de crop de l'affichage vers l'image native.
+     * Applique le facteur d'échelle et clampe aux dimensions de l'image.
+     *
+     * @param cropArea Zone de crop en coordonnées d'affichage
+     * @param image Image native de référence
+     * @return Zone de crop en coordonnées image ou null si invalide
+     */
+    private Rectangle2D convertCropAreaToImageCoordinates(Rectangle2D cropArea, WritableImage image) {
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
+        double displayWidth = drawingCanvas.getWidth();
+        double displayHeight = drawingCanvas.getHeight();
+
+        // Calculer les facteurs d'échelle
+        double scaleX = imageWidth / displayWidth;
+        double scaleY = imageHeight / displayHeight;
+
+        // Appliquer l'échelle aux coordonnées de crop
+        double scaledX = cropArea.getMinX() * scaleX;
+        double scaledY = cropArea.getMinY() * scaleY;
+        double scaledWidth = cropArea.getWidth() * scaleX;
+        double scaledHeight = cropArea.getHeight() * scaleY;
+
+        // Clamper aux dimensions de l'image
+        double x = Math.max(0, Math.min(scaledX, imageWidth - 1));
+        double y = Math.max(0, Math.min(scaledY, imageHeight - 1));
+        double w = Math.min(scaledWidth, imageWidth - x);
+        double h = Math.min(scaledHeight, imageHeight - y);
+
+        // Vérifier validité
+        if (w <= 0 || h <= 0) return null;
+
+        return new Rectangle2D(x, y, w, h);
+    }
+
+    /**
+     * Effectue l'opération de crop sur l'image.
+     *
+     * @param image Image à cropper
+     * @param cropArea Zone de crop en coordonnées image
+     * @return Image croppée
+     */
+    private WritableImage performCrop(WritableImage image, Rectangle2D cropArea) {
+        ImageModel snapshotModel = new ImageModel(image);
+        return new CropOperation(cropArea).apply(snapshotModel);
+    }
+
+    /**
+     * Met à jour l'interface après le crop : image, canvas et masque.
+     * Désactive l'outil crop après utilisation.
+     *
+     * @param croppedImage Image résultant du crop
+     */
+    private void updateImageAfterCrop(WritableImage croppedImage) {
+        // Mettre à jour l'image affichée
+        currentImage.set(croppedImage);
+        imageModel.setImage(croppedImage);
+
+        // Redimensionner le canvas de dessin
+        drawingService.resizeCanvasToImage(croppedImage);
+
+        // Redimensionner et effacer le maskCanvas
+        if (maskCanvas != null) {
+            maskCanvas.setWidth(drawingCanvas.getWidth());
+            maskCanvas.setHeight(drawingCanvas.getHeight());
+            GraphicsContext gc = maskCanvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, maskCanvas.getWidth(), maskCanvas.getHeight());
+        }
+
+        // Réinitialiser le canvas de dessin
+        drawingService.createDefaultCanvas();
+        markCanvasAsModified();
+
+        // Désactiver l'outil crop
+        activeTool.set(null);
+        cropTool = null;
+    }
+
+
+
 }

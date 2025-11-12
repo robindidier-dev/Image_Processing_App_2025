@@ -325,4 +325,13 @@ public class ToolSelectorController {
         }
     }
 
+    /**
+     * Désélectionne tous les outils visuellement.
+     */
+    public void deselectAllTools() {
+        if (toolGroup != null) {
+            toolGroup.selectToggle(null);
+        }
+    }
+
 }

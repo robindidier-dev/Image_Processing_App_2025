@@ -26,6 +26,7 @@
             <Menu text="Edit">
                 <MenuItem text="Horizontal Symmetry" onAction="#applyHorizontalSymmetry"/>
                 <MenuItem text="Vertical Symmetry" onAction="#applyVerticalSymmetry"/>
+                <MenuItem text="Crop" onAction="#startCropping"/>
                 <MenuItem text="Clockwise Rotation" onAction="#applyClockwiseRotation"/>
                 <MenuItem text="Counterclockwise Rotation" onAction="#applyCounterclockwiseRotation"/>
             </Menu>
@@ -49,6 +50,9 @@
             <!-- ImageView pour afficher l'image chargée -->
             <!-- Dimensions fixes 800x600 avec ratio préservé -->
             <ImageView fx:id="imageView" fitWidth="800" fitHeight="600" preserveRatio="true"/>
+
+            <!-- Canvas transparent superposé pour le masque d'opacité -->
+            <Canvas fx:id="maskCanvas" mouseTransparent="true" width="800" height="600"/>
         </StackPane>
     </center>
 

@@ -322,6 +322,8 @@ public class ImageModel {
         }
     }
 
+
+
     /**
      * Vérifie si les coordonnées sont valides pour l'image.
      * 
