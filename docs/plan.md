@@ -114,22 +114,22 @@ Feature complète répartie par couche MVC.
 
 #### Paul-Antoine - Algorithm SeamCarver
 
-**Branch:** `paulantoine/seam-algorithm`
+**Branch:** `paulantoine/seam-ui`
+
+- Créer `SeamCarvingDialog.fxml` avec TextField (largeur/hauteur)
+- Controller avec boucle de suppression de seams
+- Ajouter Menu > Edit > Resize with Seam Carving
+- Option: bouton preview pour visualiser prochaine couture
+
+#### Adrien - UI Seam Carving
+
+**Branch:** `adrien/seam-algorithm`
 
 - Créer `SeamCarver` dans `model/filters/`
 - Méthode `computeCumulativeEnergy` (programmation dynamique)
 - Méthode `findSeam` (backtracking depuis min dernière ligne)
 - Méthode `removeSeam` (décalage pixels)
 - Tests pour vertical ET horizontal
-
-#### Adrien - UI Seam Carving
-
-**Branch:** `adrien/seam-ui`
-
-- Créer `SeamCarvingDialog.fxml` avec TextField (largeur/hauteur)
-- Controller avec boucle de suppression de seams
-- Ajouter Menu > Edit > Resize with Seam Carving
-- Option: bouton preview pour visualiser prochaine couture
 
 **Merge Etape 3:** energy-calculator → seam-algorithm → seam-ui
 
@@ -155,7 +155,7 @@ Feature complète répartie par couche MVC.
 - [x] Implémenter KdTree avec Point2D, insertion et recherche plus proche voisin
 - [x] Créer MosaicFilter utilisant KdTree pour effet mosaïque
 - [x] Ajouter MosaicDialog et entrée menu Filter > Mosaic Effect
-- [x] Introduire `model/operations` avec Operation et SymmetryOperation
+- [x] Introduire `model/operations` avec une interface Operation 
 - [ ] Implémenter EnergyCalculator pour calcul gradient des pixels
 - [ ] Créer SeamCarver avec programmation dynamique et backtracking
 - [ ] Ajouter SeamCarvingDialog et entrée menu Edit > Resize with Seam Carving

@@ -2,6 +2,7 @@ package imageprocessingapp.service.filters;
 
 import imageprocessingapp.model.ImageModel;
 import imageprocessingapp.model.filters.MosaicFilter;
+import imageprocessingapp.model.filters.MosaicFilter.MosaicSeedMode;
 import javafx.scene.image.Image;
 
 /**
@@ -19,14 +20,15 @@ public class MosaicFilterService {
      * @return l'image générée par le filtre mosaïque
      * @throws IllegalArgumentException si le modèle est nul ou ne contient pas d'image
      */
-    public Image applyMosaic(ImageModel imageModel, int pointCount) {
+    public Image applyMosaic(ImageModel imageModel, int pointCount, MosaicSeedMode mode) {
         if (imageModel == null || !imageModel.hasImage()) {
             throw new IllegalArgumentException("ImageModel must contain an image before applying mosaic.");
         }
-        if (pointCount <= 0) {
+        if (pointCount < 0) {
             throw new IllegalArgumentException("pointCount must be positive.");
         }
-        return new MosaicFilter(imageModel, pointCount).applyMosaic();
+        MosaicSeedMode effectiveMode = mode != null ? mode : MosaicFilter.MosaicSeedMode.RANDOM;
+        return new MosaicFilter(imageModel, pointCount, effectiveMode).applyMosaic();
     }
 }
 

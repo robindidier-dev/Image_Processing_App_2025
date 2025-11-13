@@ -46,6 +46,36 @@
     -fx-background-color: #a6f4bb;
 }
 
+/* Case à cocher : style flat design */
+.check-box {
+    -fx-font-size: 13px;
+    -fx-text-fill: #555;
+    -fx-padding: 6 12;
+    -fx-background-color: transparent;
+}
+
+.check-box .box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #aaaaaa;
+    -fx-border-width: 1.2;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-pref-width: 14;
+    -fx-pref-height: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0.2, 0, 1);
+}
+
+.check-box:selected .box {
+    -fx-background-color: #c4e8d3;
+    -fx-border-color: #88c9a9;
+}
+
+.check-box:hover .box {
+    -fx-background-color: #e0f5e9;
+    -fx-border-color: #88c9a9;
+    -fx-cursor: hand;
+}
+
 /* Slider (classe personnalisée spinner-slider définie dans le FXML) */
 .mosaicSlider .track {
     -fx-background-color: #dddddd;

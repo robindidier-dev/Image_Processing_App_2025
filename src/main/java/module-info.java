@@ -13,6 +13,8 @@ module imageprocessingapp {
     exports imageprocessingapp; // Package principal accessible aux autres modules
     exports imageprocessingapp.model; // Package du modèle accessible aux autres modules
     exports imageprocessingapp.model.tools; // Package des outils accessible aux autres modules
+    exports imageprocessingapp.model.filters; // Package des filtres (mosaïque, seam carving)
+    exports imageprocessingapp.service.filters; // Couche service partagée
     exports imageprocessingapp.view.components; // Package des composants d'interface
     exports imageprocessingapp.controller; // Package des contrôleurs
     

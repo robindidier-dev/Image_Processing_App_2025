@@ -31,9 +31,16 @@
            style="-fx-font-size: 12px; -fx-text-fill: #555; -fx-padding: 0;"
            alignment="CENTER"/>
 
+    <CheckBox fx:id="regularGridCheckBox"
+            text="Grille régulière"
+            GridPane.rowIndex="2"
+            GridPane.columnIndex="0"
+            GridPane.columnSpan="2"
+            alignment="CENTER" />
+
     <!-- Slider compact -->
     <Slider fx:id="mosaicSlider"
-            min="1" max="10000" value="100"
+            min="0" max="10000" value="0"
             majorTickUnit="5000" minorTickCount="0"
             showTickMarks="true" showTickLabels="true"
             snapToTicks="false"
@@ -44,7 +51,8 @@
             styleClass="mosaicSlider" />
 
     <!-- Boutons compacts -->
-    <HBox GridPane.rowIndex="2" GridPane.columnIndex="0"
+    <HBox GridPane.rowIndex="3" 
+          GridPane.columnIndex="0"
           GridPane.columnSpan="2"
           alignment="CENTER"
           spacing="8"
