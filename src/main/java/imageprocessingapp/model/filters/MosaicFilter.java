@@ -21,12 +21,30 @@ public class MosaicFilter {
     private final int width;
     private final int height;
 
+    // Mode de génération des points de départ
+    private MosaicSeedMode seedMode;
 
-    public MosaicFilter(ImageModel imageModel, int pointCount) {
+    /**
+     * Enumération des modes de génération des points de départ
+     */
+    public enum MosaicSeedMode {
+        RANDOM,
+        REGULAR_GRID
+    }
+
+    /**
+     * Constructeur de la classe MosaicFilter.
+     *
+     * @param imageModel Le modèle de l'image.
+     * @param pointCount Le nombre de points de départ.
+     * @param seedMode Le mode de génération des points de départ.
+     */
+    public MosaicFilter(ImageModel imageModel, int pointCount, MosaicSeedMode seedMode) {
         this.imageModel = imageModel;
         this.pointCount = pointCount;
         this.width = imageModel.getWidth();
         this.height = imageModel.getHeight();
+        this.seedMode = seedMode;
     }
 
     /**
@@ -53,12 +71,43 @@ public class MosaicFilter {
         return points;
     }
 
+    /** Génère des points de départ régulièrement espacés dans l'image
+     * pour créer une grille de points de départ.
+     *
+     * @return Un tableau de Point2D.
+    */
+    public Point2D[] generateRegularGridPoints() {
+        Point2D[] points = new Point2D[pointCount];
+    
+        int cols = (int) Math.ceil(Math.sqrt(pointCount * (width / (double) height)));
+        int rows = (int) Math.ceil(pointCount / (double) cols);
+    
+        double stepX = width / (double) cols;
+        double stepY = height / (double) rows;
+    
+        int index = 0;
+        for (int row = 0; row < rows && index < pointCount; row++) {
+            for (int col = 0; col < cols && index < pointCount; col++) {
+                int x = (int) Math.round((col + 0.5) * stepX);
+                int y = (int) Math.round((row + 0.5) * stepY);
+                x = Math.min(x, width - 1);
+                y = Math.min(y, height - 1);
+                points[index++] = new Point2D(x, y);
+            }
+        }
+        return points;
+    }
+
 
 
     public Image applyMosaic() {
 
         // Génération de n points aléatoires (seeds) et insertion dans le KdTree
-        Point2D[] seeds = generateRandomPoints();
+        Point2D[] seeds = switch (seedMode) {
+            case RANDOM -> generateRandomPoints();
+            case REGULAR_GRID -> generateRegularGridPoints();
+        };
+        
         KdTree kdTree = new KdTree();
         for (Point2D p : seeds) kdTree.insert(p);
 

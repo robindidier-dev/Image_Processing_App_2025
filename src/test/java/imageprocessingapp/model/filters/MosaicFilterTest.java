@@ -9,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import imageprocessingapp.model.filters.MosaicFilter.MosaicSeedMode;
+
 class MosaicFilterTest {
 
     private ImageModel imageModel;
@@ -38,7 +40,7 @@ class MosaicFilterTest {
     @Test
     void constructorWorks() {
         int pointCount = 50;
-        MosaicFilter filter = new MosaicFilter(imageModel, pointCount);
+        MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
         
         // Vérifier que les dimensions sont correctement initialisées
         // On ne peut pas accéder directement aux champs privés, mais on peut vérifier
@@ -49,7 +51,7 @@ class MosaicFilterTest {
     @Test
     void generateRandomPointsCount() {
         int pointCount = 25;
-        MosaicFilter filter = new MosaicFilter(imageModel, pointCount);
+        MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
         
         Point2D[] points = filter.generateRandomPoints();
         
@@ -60,7 +62,7 @@ class MosaicFilterTest {
     @Test
     void generateRandomPointsBounds() {
         int pointCount = 30;
-        MosaicFilter filter = new MosaicFilter(imageModel, pointCount);
+        MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
         
         Point2D[] points = filter.generateRandomPoints();
         
@@ -75,7 +77,7 @@ class MosaicFilterTest {
     @Test
     void generateRandomPointsIntegers() {
         int pointCount = 20;
-        MosaicFilter filter = new MosaicFilter(imageModel, pointCount);
+        MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
         
         Point2D[] points = filter.generateRandomPoints();
         
@@ -91,7 +93,7 @@ class MosaicFilterTest {
     @Test
     void applyMosaicDimensions() {
         int pointCount = 15;
-        MosaicFilter filter = new MosaicFilter(imageModel, pointCount);
+        MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
         
         Image result = filter.applyMosaic();
         
@@ -103,7 +105,7 @@ class MosaicFilterTest {
     @Test
     void applyMosaicUsesColors() {
         int pointCount = 10;
-        MosaicFilter filter = new MosaicFilter(imageModel, pointCount);
+        MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
         
         Image result = filter.applyMosaic();
         var pixelReader = result.getPixelReader();
@@ -132,7 +134,7 @@ class MosaicFilterTest {
         int[] pointCounts = {1, 5, 10, 50, 100};
         
         for (int pointCount : pointCounts) {
-            MosaicFilter filter = new MosaicFilter(imageModel, pointCount);
+            MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
             Image result = filter.applyMosaic();
             
             assertNotNull(result);
@@ -162,7 +164,7 @@ class MosaicFilterTest {
         }
         
         ImageModel simpleModel = new ImageModel(simpleImage);
-        MosaicFilter filter = new MosaicFilter(simpleModel, 5);
+        MosaicFilter filter = new MosaicFilter(simpleModel, 5, MosaicSeedMode.RANDOM);
         
         Image result = filter.applyMosaic();
         assertNotNull(result);

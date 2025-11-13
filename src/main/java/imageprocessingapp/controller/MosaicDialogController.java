@@ -2,6 +2,7 @@ package imageprocessingapp.controller;
 
 import imageprocessingapp.model.ImageModel;
 import imageprocessingapp.service.filters.MosaicFilterService;
+import imageprocessingapp.model.filters.MosaicFilter.MosaicSeedMode;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
@@ -10,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
+import javafx.scene.control.CheckBox;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -27,6 +29,9 @@ public class MosaicDialogController {
 
     // Slider du MosaicDialog.fxml qui modifie le nombre de fils du kdtree
     @FXML private Slider mosaicSlider;
+
+    // CheckBox du MosaicDialog.fxml qui permet de choisir le mode de génération des points de départ
+    @FXML private CheckBox regularGridCheckBox;
 
     // On récupère l'image chargée ; Propriété observable pour l'image liée à l'ImageView
     private ObjectProperty<Image> currentImage;
@@ -112,6 +117,10 @@ public class MosaicDialogController {
         cancelButton.setOnAction(event -> cancelPressed());
         okButton.setOnAction(event -> okPressed());
 
+        regularGridCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            updatePreview((int) mosaicSlider.getValue(), newVal);
+        });
+
         if (mosaicSlider != null) {
             mosaicSlider.setId("mosaicSlider");
         }
@@ -119,7 +128,7 @@ public class MosaicDialogController {
         // Ajout d'un listener pour suivre en temps réel la valeur du slider et mettre à jour la prévisualisation à chaque changement.
         mosaicSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             // Ce code s’exécutera à chaque changement de valeur du slider
-            updatePreview(newValue.intValue());
+            updatePreview(newValue.intValue(), regularGridCheckBox.isSelected());
         });
     }
 
@@ -145,12 +154,17 @@ public class MosaicDialogController {
     }
 
     // Met à jour l'image mosaïque en modifiant la propriété observable
-    private void updatePreview(int value) {
+    private void updatePreview(int value, boolean regularGrid) {
         // Vérification des paramètres d'entrée
         if (imageModel == null || !imageModel.hasImage() || currentImage == null) {
             throw new IllegalStateException("Invalid image model or current image to update the preview");
         }
-        Image mosaicImage = mosaicFilterService.applyMosaic(imageModel, value); // on utilise l'imageModel plutôt que l'image directement pour pouvoir connaître la taille de l'image, accéder aux pixels, etc.
+        MosaicSeedMode mode = regularGrid ? MosaicSeedMode.REGULAR_GRID : MosaicSeedMode.RANDOM;
+        if (value == 0) {
+            currentImage.set(originalImage);
+        } else {
+        Image mosaicImage = mosaicFilterService.applyMosaic(imageModel, value, mode); // on utilise l'imageModel plutôt que l'image directement pour pouvoir connaître la taille de l'image, accéder aux pixels, etc.
         currentImage.set(mosaicImage); // met à jour l'image observée, mise à jour automatique de l'ImageView liée (cf .bind() dans MainController)
+        }
     }
 }

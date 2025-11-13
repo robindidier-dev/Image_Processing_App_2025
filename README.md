@@ -13,50 +13,50 @@ Une application JavaFX de traitement d'image développée en équipe avec les fo
 
 ```
 src/main/java/
-├── module-info.java              # Définition du module Java
+├── module-info.java                        # Définition du module Java
 └── imageprocessingapp/
-   ├── MainApp.java               # Point d'entrée de l'application
-   ├── model/                     # Logique métier et données
-   │  ├── ImageModel.java         # Modèle principal de l'image
-   │  ├── ColorUtils.java         # Utilitaires pour les couleurs
-   │  ├── tools/                  # Outils de dessin
-   │  │  ├── Tool.java            # Interface des outils
+   ├── MainApp.java                         # Point d'entrée de l'application
+   ├── model/                               # Logique métier et données (couche M)
+   │  ├── ImageModel.java                   # État courant de l'image + accès pixels
+   │  ├── ColorUtils.java                   # Utilitaires purement métiers
+   │  ├── tools/                            # Outils de dessin
+   │  │  ├── Tool.java
    │  │  ├── PaintTool.java
    │  │  ├── PickerTool.java
    │  │  └── EraseTool.java
-   │  ├── operations/             # Transformations (symétrie, rotation, crop, compression)
+   │  ├── operations/                       # Transformations géométriques
    │  │  ├── Operation.java
    │  │  ├── SymmetryOperation.java
    │  │  ├── RotateOperation.java
    │  │  ├── CropOperation.java
    │  │  └── CompressionOperation.java
-            
-   │  ├── filters/                # Filtres/effets (mosaïque, seam carving)
+   │  ├── filters/                          # Effets métiers réutilisables
    │  │  ├── MosaicFilter.java
-   │  │  ├── EnergyCalculator.java
-   │  │  └── SeamCarver.java
-   │  └── structures/             # Structures de données (KdTree)
+   │  │  ├── EnergyCalculator.java          # Calcul d'énergie (Seam Carving)
+   │  │  └── SeamCarver.java                # Algorithmes seam carving (DP + remove)
+   │  └── structures/                       # Structures de données partagées
    │     ├── Point2D.java
    │     └── KdTree.java
-   ├── view/                      # Composants d'interface utilisateur
-   │  └── components/             # Widgets réutilisables
-   │     └── ColorDisplay.java
-   ├── controller/                # Logique de contrôle
-   │  ├── MainController.java     
-   │  ├── ToolSelectorController.java# Logique ToggleGroup 
+   ├── service/                             # Couche service (couche S)
+   │  ├── DrawingService.java               # Logique technique canvas
+   │  └── filters/
+   │     ├── MosaicFilterService.java       # Orchestration mosaïque
+   │     └── SeamCarvingService.java        # Orchestration seam carving (boucles, tâches)
+   ├── controller/                          # Logique de contrôle (couche C)
+   │  ├── MainController.java               # Coordination globale
+   │  ├── ToolSelectorController.java       # Gestion ToggleGroup outils
    │  ├── ColorPickerDialogController.java
    │  ├── MosaicDialogController.java
-   │  └── SeamCarvingDialogController.java
-   └── service/
-      ├── DrawingService.java
-      └── filters/
-         └── MosaicFilterService.java
+   │  └── SeamCarvingDialogController.java  # Dialogue seam carving (UI -> Service)
+   └── view/                                # Composants d'interface (couche V)
+      └── components/
+         └── ColorDisplay.java
 
 src/main/resources/imageprocessingapp/
 ├── view/
-│  ├── MainView.fxml              # Interface principale (FXML)
+│  ├── MainView.fxml                        # Interface principale (FXML)
 │  └── ToolSelectorView.fxml
-├── dialogs/                      # Fenêtres de dialogue
+├── dialogs/
 │  ├── ColorPickerDialog.fxml
 │  ├── MosaicDialog.fxml
 │  └── SeamCarvingDialog.fxml
