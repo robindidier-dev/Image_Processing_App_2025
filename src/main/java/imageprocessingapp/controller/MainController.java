@@ -2,6 +2,7 @@ package imageprocessingapp.controller;
 
 // Custom imports
 import imageprocessingapp.model.ImageModel;
+import imageprocessingapp.model.filters.SeamCarver;
 import imageprocessingapp.model.operations.SymmetryOperation;
 import imageprocessingapp.model.operations.CropOperation;
 import imageprocessingapp.model.operations.RotateOperation;
@@ -139,6 +140,12 @@ public class MainController {
     private Canvas maskCanvas; // pour l'opacité lors du crop
 
 
+
+
+    // Seam Carving
+
+    private SeamCarver seamCarver;
+
     // ===== GETTERS POUR LES PROPRIÉTÉS =====
 
     public ObjectProperty<Color> selectedColorProperty() { 
@@ -182,6 +189,7 @@ public class MainController {
         setupTools();
         setupColorDisplay();
         setupDelayedInitialization();
+        setupSeemCarver();
     }
 
     private void setupImageModel() {
@@ -265,6 +273,10 @@ public class MainController {
             }
         }
     }
+
+
+
+    private void setupSeemCarver() {seamCarver = new SeamCarver();}
 
     /**
      * Configure les éléments qui nécessitent que la scène soit disponible.
@@ -890,6 +902,29 @@ public class MainController {
         // Désactiver l'outil crop
         activeTool.set(null);
         cropTool = null;
+    }
+
+
+
+
+    /**
+     * Test simple du Seam Carving - retire 50 pixels de largeur.
+     */
+    @FXML
+    private void handleSeamCarving() {
+        if (!imageModel.hasImage()) {
+            System.out.println("Pas d'image chargée");
+            return;
+        }
+
+        // Retirer 50 pixels (hardcodé pour tester)
+        WritableImage resizedImage = seamCarver.resizeOptimized(imageModel, 50);
+
+        // Mettre à jour l'affichage
+        imageModel.setImage(resizedImage);
+        currentImage.set(resizedImage);
+
+        System.out.println("Seam Carving appliqué : -50 pixels");
     }
 
 
