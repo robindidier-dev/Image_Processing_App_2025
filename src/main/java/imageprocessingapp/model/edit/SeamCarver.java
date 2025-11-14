@@ -1,6 +1,7 @@
-package imageprocessingapp.model.filters;
+package imageprocessingapp.model.edit;
 
 import imageprocessingapp.model.ImageModel;
+import imageprocessingapp.model.structures.EnergyCalculator;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;

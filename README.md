@@ -3,7 +3,7 @@
 Une application JavaFX de traitement d'image développée en équipe avec les fonctionnalités suivantes :
 - **Outils de dessin** (pinceau, pipette, gomme)
 - **Effet mosaïque** utilisant un **KdTree**
-- **Opérations géométriques** (symétries, rotations, crop, compression)
+- **Opérations géométriques** (symétries, rotations, crop)
 - **Seam Carving** pour redimensionner intelligemment les images
 - **Système de couleurs** avec sélecteur RGB
 
@@ -23,24 +23,27 @@ src/main/java/
    │  │  ├── Tool.java
    │  │  ├── PaintTool.java
    │  │  ├── PickerTool.java
-   │  │  └── EraseTool.java
+   │  │  ├── EraseTool.java
+   │  │  └── edit/
+   │  │     └── CropTool.java               # Outil de sélection pour le crop
    │  ├── operations/                       # Transformations géométriques
    │  │  ├── Operation.java
    │  │  ├── SymmetryOperation.java
    │  │  ├── RotateOperation.java
-   │  │  ├── CropOperation.java
-   │  │  └── CompressionOperation.java
+   │  │  └── CropOperation.java
    │  ├── filters/                          # Effets métiers réutilisables
-   │  │  ├── MosaicFilter.java
-   │  │  ├── EnergyCalculator.java          # Calcul d'énergie (Seam Carving)
-   │  │  └── SeamCarver.java                # Algorithmes seam carving (DP + remove)
-   │  └── structures/                       # Structures de données partagées
-   │     ├── Point2D.java
-   │     └── KdTree.java
+   │  │  └── MosaicFilter.java
+   │  ├── structures/                       # Structures de données partagées
+   │  │  ├── Point2D.java
+   │  │  ├── KdTree.java
+   │  │  └── EnergyCalculator.java          # Calcul d'énergie (Seam Carving)
+   │  └── edit/                             # Algorithmes de traitement
+   │     └── SeamCarver.java                # Algorithmes seam carving (DP + remove)
    ├── service/                             # Couche service (couche S)
    │  ├── DrawingService.java               # Logique technique canvas
-   │  └── filters/
-   │     ├── MosaicFilterService.java       # Orchestration mosaïque
+   │  ├── filters/
+   │  │  └── MosaicFilterService.java       # Orchestration mosaïque
+   │  └── edit/
    │     └── SeamCarvingService.java        # Orchestration seam carving (boucles, tâches)
    ├── controller/                          # Logique de contrôle (couche C)
    │  ├── MainController.java               # Coordination globale
@@ -67,7 +70,8 @@ src/main/resources/imageprocessingapp/
 └── style/
    ├── ToolBar.css
    ├── ColorPickerDialog.css
-   └── MosaicDialog.css
+   ├── MosaicDialog.css
+   └── SeamCarvingDialog.css
 
 src/test/java/imageprocessingapp/
 ├── model/                        # Tests unitaires du model (ColorUtils, KdTree, filters)

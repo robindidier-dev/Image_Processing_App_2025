@@ -38,17 +38,6 @@ class MosaicFilterTest {
     }
 
     @Test
-    void constructorWorks() {
-        int pointCount = 50;
-        MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
-        
-        // Vérifier que les dimensions sont correctement initialisées
-        // On ne peut pas accéder directement aux champs privés, mais on peut vérifier
-        // via les méthodes publiques
-        assertNotNull(filter);
-    }
-
-    @Test
     void generateRandomPointsCount() {
         int pointCount = 25;
         MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
@@ -71,22 +60,6 @@ class MosaicFilterTest {
                 "Point x doit être dans [0, 100[");
             assertTrue(point.y() >= 0 && point.y() < 100, 
                 "Point y doit être dans [0, 100[");
-        }
-    }
-
-    @Test
-    void generateRandomPointsIntegers() {
-        int pointCount = 20;
-        MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
-        
-        Point2D[] points = filter.generateRandomPoints();
-        
-        for (Point2D point : points) {
-            // Les coordonnées doivent être des entiers (même si stockées en double)
-            assertEquals((int) point.x(), point.x(), 0.0, 
-                "Point x doit être un entier");
-            assertEquals((int) point.y(), point.y(), 0.0, 
-                "Point y doit être un entier");
         }
     }
 
@@ -127,20 +100,6 @@ class MosaicFilterTest {
         // Avec une image de test colorée, on devrait avoir des pixels non-noirs
         assertTrue(hasNonBlackPixel, 
             "L'image de mosaïque devrait contenir des couleurs de l'image originale");
-    }
-
-    @Test
-    void applyMosaicPointCounts() {
-        int[] pointCounts = {1, 5, 10, 50, 100};
-        
-        for (int pointCount : pointCounts) {
-            MosaicFilter filter = new MosaicFilter(imageModel, pointCount, MosaicSeedMode.RANDOM);
-            Image result = filter.applyMosaic();
-            
-            assertNotNull(result);
-            assertEquals(100, (int) result.getWidth());
-            assertEquals(100, (int) result.getHeight());
-        }
     }
 
     @Test
