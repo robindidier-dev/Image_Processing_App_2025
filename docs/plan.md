@@ -112,16 +112,16 @@ Feature complète répartie par couche MVC.
 - Méthode `computeEnergyMap(ImageModel)` retourne double[][]
 - Tests avec images simples (bords détectés)
 
-#### Paul-Antoine - Algorithm SeamCarver
+#### Paul-Antoine - UI Seam Carving
 
 **Branch:** `paulantoine/seam-ui`
 
-- Créer `SeamCarvingDialog.fxml` avec TextField (largeur/hauteur)
-- Controller avec boucle de suppression de seams
+- Créer `SeamCarvingDialog.fxml` avec 2 Sliders (largeur/hauteur)
+- Créer `SeamCarvingDialogController` utilisant `SeamCarvingService` pour la boucle de suppression de seams
+- Implémenter prévisualisation en temps réel lors du déplacement des sliders
 - Ajouter Menu > Edit > Resize with Seam Carving
-- Option: bouton preview pour visualiser prochaine couture
 
-#### Adrien - UI Seam Carving
+#### Adrien - Algorithm SeamCarver
 
 **Branch:** `adrien/seam-algorithm`
 
@@ -129,6 +129,7 @@ Feature complète répartie par couche MVC.
 - Méthode `computeCumulativeEnergy` (programmation dynamique)
 - Méthode `findSeam` (backtracking depuis min dernière ligne)
 - Méthode `removeSeam` (décalage pixels)
+- Créer `SeamCarvingService` pour orchestrer le redimensionnement (vertical et horizontal)
 - Tests pour vertical ET horizontal
 
 **Merge Etape 3:** energy-calculator → seam-algorithm → seam-ui
@@ -137,11 +138,29 @@ Feature complète répartie par couche MVC.
 
 ### **Etape 4 : Finitions & Tests**
 
-#### Paul-Antoine
+#### Paul-Antoine - Undo/Redo
 
-#### Robin
+**Branch:** `paulantoine/undo-redo`
 
-#### Adrien
+- Ajouter une pile undo/redo dans le modèle/contrôleur.
+- Sauver chaque modification sous forme d’Operation.
+- Implémenter les méthodes undo/redo et lier au menu Edit.
+
+#### Robin - Zoom
+
+**Branch:** `robin/zoom`
+
+- Ajouter des boutons ou raccourcis zoom dans la vue.
+- Appliquer une transformation de scale à l’image.
+- Afficher le niveau de zoom et gérer le centrage.
+
+#### Adrien - Optimisation Seam Carving
+
+**Branch:** `adrien/opti-seamcarving`
+
+- Optimiser le calcul (éviter recalculs, meilleure structure).
+- Tester performances et qualité.
+- Proposer mode « rapide » si utile.
 
 ---
 
@@ -156,7 +175,8 @@ Feature complète répartie par couche MVC.
 - [x] Créer MosaicFilter utilisant KdTree pour effet mosaïque
 - [x] Ajouter MosaicDialog et entrée menu Filter > Mosaic Effect
 - [x] Introduire `model/operations` avec une interface Operation 
-- [ ] Implémenter EnergyCalculator pour calcul gradient des pixels
-- [ ] Créer SeamCarver avec programmation dynamique et backtracking
-- [ ] Ajouter SeamCarvingDialog et entrée menu Edit > Resize with Seam Carving
+- [x] Implémenter EnergyCalculator pour calcul gradient des pixels
+- [x] Créer SeamCarver avec programmation dynamique et backtracking
+- [x] Ajouter SeamCarvingDialog et entrée menu Edit > Resize with Seam Carving
 - [ ] Compléter tests unitaires/intégration et Javadoc pour toutes les features
+- [ ] Finition (implémentation/optimisation de service)

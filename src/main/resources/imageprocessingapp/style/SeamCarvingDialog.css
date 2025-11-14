@@ -1,0 +1,79 @@
+/* Racine : GridPane */
+.root-pane {
+    -fx-background-color: #e9e9e9;
+    -fx-padding: 16 0 16 0;
+    -fx-border-color: #444;
+    -fx-border-width: 1.2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+/* Label principal (sélecteur générique dans la racine) */
+.root-pane > Label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #555;
+    -fx-alignment: center;
+}
+
+/* HBox des boutons */
+.hbox {
+    -fx-spacing: 14;
+    -fx-padding: 10 0 10 0;
+    -fx-alignment: center;
+}
+
+/* Bouton Cancel */
+#cancelButton {
+    -fx-background-color: #f8c8c8;
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 6 16;
+}
+#cancelButton:hover {
+    -fx-background-color: #d4a1a1;
+}
+
+/* Bouton Ok */
+#okButton {
+    -fx-background-color: #c4e8d3;
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 6 16;
+}
+#okButton:hover {
+    -fx-background-color: #a6f4bb;
+}
+
+/* Slider (classe personnalisée seam-slider définie dans le FXML) */
+.seamSlider .track {
+    -fx-background-color: #dddddd;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-pref-height: 4;
+}
+
+.seamSlider .filled-track {
+    -fx-background-color: #d8eaff;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.seamSlider .thumb {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #aaaaaa;
+    -fx-border-width: 1.2;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-pref-width: 12;
+    -fx-pref-height: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0.2, 0, 1);
+    -fx-cursor: hand;
+}
+
+/* Ajustements responsive : limiter largeur du slider si la fenêtre est petite */
+.root-pane .seamSlider {
+    -fx-max-width: 260px;
+    -fx-min-width: 150px;
+}

@@ -29,9 +29,7 @@
                 <MenuItem text="Crop" onAction="#startCropping"/>
                 <MenuItem text="Clockwise Rotation" onAction="#applyClockwiseRotation"/>
                 <MenuItem text="Counterclockwise Rotation" onAction="#applyCounterclockwiseRotation"/>
-
-
-                <MenuItem text="Seem Carving" onAction="#handleSeamCarving"/>
+                <MenuItem text="Resize with Seam Carving" onAction="#handleSeamCarving"/>
             </Menu>
             <Menu text="Filters">
                 <MenuItem text="Mosaic Effect" onAction="#openMosaicDialog"/>

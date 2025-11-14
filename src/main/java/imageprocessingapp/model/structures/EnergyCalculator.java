@@ -1,4 +1,4 @@
-package imageprocessingapp.model.filters;
+package imageprocessingapp.model.structures;
 
 import imageprocessingapp.model.ImageModel;
 import javafx.scene.paint.Color;

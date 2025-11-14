@@ -70,26 +70,4 @@ class ImageModelTest {
         assertThrows(IndexOutOfBoundsException.class,
                 () -> writable.getPixelWriter().setColor(11, 5, Color.BLUE));
     }
-
-    @Test
-    void drawLineAndCircle() {
-        ImageModel model = new ImageModel(new WritableImage(20, 20));
-        WritableImage writable = model.getWritableImage();
-        // Simuler une ligne horizontale
-        for (int x = 0; x <= 5; x++) {
-            writable.getPixelWriter().setColor(x, 0, Color.GREEN);
-        }
-        assertEquals(Color.GREEN, writable.getPixelReader().getColor(0, 0));
-        assertEquals(Color.GREEN, writable.getPixelReader().getColor(5, 0));
-
-        // Simuler un cercle simple (centre + voisins)
-        writable.getPixelWriter().setColor(10, 10, Color.BLUE);
-        writable.getPixelWriter().setColor(10, 9, Color.BLUE);
-        writable.getPixelWriter().setColor(10, 11, Color.BLUE);
-        writable.getPixelWriter().setColor(9, 10, Color.BLUE);
-        writable.getPixelWriter().setColor(11, 10, Color.BLUE);
-
-        assertEquals(Color.BLUE, writable.getPixelReader().getColor(10, 10));
-        assertEquals(Color.BLUE, writable.getPixelReader().getColor(10, 9));
-    }
 }

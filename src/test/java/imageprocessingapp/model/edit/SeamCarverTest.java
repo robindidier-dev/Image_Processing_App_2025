@@ -1,4 +1,4 @@
-package imageprocessingapp.model.filters;
+package imageprocessingapp.model.edit;
 
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
@@ -33,12 +33,6 @@ class SeamCarverTest {
         }
 
         seamCarver = new SeamCarver();
-    }
-
-    @Test
-    void constructorWorks() {
-        SeamCarver carver = new SeamCarver();
-        assertNotNull(carver);
     }
 
     @Test
@@ -242,21 +236,6 @@ class SeamCarverTest {
     }
 
     @Test
-    void removeSeamDifferentIndices() {
-        // Créer une couture diagonale
-        List<Integer> seam = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            seam.add(Math.min(i, 9)); // Indices croissants
-        }
-
-        WritableImage result = seamCarver.removeSeam(testImage, seam);
-
-        assertNotNull(result);
-        assertEquals(9, (int) result.getWidth());
-        assertEquals(10, (int) result.getHeight());
-    }
-
-    @Test
     void removeSeamEdgeCase() {
         // Supprimer le bord gauche
         List<Integer> seamLeft = new ArrayList<>();
@@ -277,22 +256,4 @@ class SeamCarverTest {
         assertEquals(9, (int) resultRight.getWidth());
     }
 
-    @Test
-    void removeMultipleSeams() {
-        WritableImage current = testImage;
-
-        // Supprimer 3 coutures successivement
-        for (int n = 0; n < 3; n++) {
-            List<Integer> seam = new ArrayList<>();
-            for (int i = 0; i < (int) current.getHeight(); i++) {
-                seam.add((int) current.getWidth() / 2); // Milieu
-            }
-            current = seamCarver.removeSeam(current, seam);
-        }
-
-        assertEquals(7, (int) current.getWidth(),
-                "Après 3 suppressions, largeur doit être 10 - 3 = 7");
-        assertEquals(10, (int) current.getHeight(),
-                "La hauteur ne doit pas changer");
-    }
 }

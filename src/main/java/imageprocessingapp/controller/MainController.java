@@ -2,7 +2,6 @@ package imageprocessingapp.controller;
 
 // Custom imports
 import imageprocessingapp.model.ImageModel;
-import imageprocessingapp.model.filters.SeamCarver;
 import imageprocessingapp.model.operations.SymmetryOperation;
 import imageprocessingapp.model.operations.CropOperation;
 import imageprocessingapp.model.operations.RotateOperation;
@@ -11,6 +10,7 @@ import imageprocessingapp.model.tools.Tool;
 import imageprocessingapp.model.tools.edit.CropTool;
 import imageprocessingapp.view.components.ColorDisplay;
 import imageprocessingapp.service.DrawingService;
+import imageprocessingapp.service.edit.SeamCarvingService;
 
 // Java standard imports
 import java.io.File;
@@ -106,6 +106,11 @@ public class MainController {
      * Service de dessin pour gérer les opérations sur le canvas.
      */
     private DrawingService drawingService;
+
+    /**
+     * Service de Seam Carving pour gérer les opérations de redimensionnement.
+     */
+    private SeamCarvingService seamCarvingService;
     
     /**
      * Fichier source de l'image actuelle.
@@ -138,13 +143,6 @@ public class MainController {
 
     @FXML
     private Canvas maskCanvas; // pour l'opacité lors du crop
-
-
-
-
-    // Seam Carving
-
-    private SeamCarver seamCarver;
 
     // ===== GETTERS POUR LES PROPRIÉTÉS =====
 
@@ -189,7 +187,7 @@ public class MainController {
         setupTools();
         setupColorDisplay();
         setupDelayedInitialization();
-        setupSeemCarver();
+        setupSeamCarvingService();
     }
 
     private void setupImageModel() {
@@ -274,10 +272,6 @@ public class MainController {
         }
     }
 
-
-
-    private void setupSeemCarver() {seamCarver = new SeamCarver();}
-
     /**
      * Configure les éléments qui nécessitent que la scène soit disponible.
      */
@@ -288,6 +282,14 @@ public class MainController {
             setupWindowCloseHandler();
         });
     }
+
+    /**
+     * Configure le service de Seam Carving.
+     */
+    private void setupSeamCarvingService() {
+        seamCarvingService = new SeamCarvingService();
+    }
+
 
     // ===== GESTION DES ÉVÉNEMENTS SOURIS ET CLAVIERS =====
     
@@ -904,27 +906,17 @@ public class MainController {
         cropTool = null;
     }
 
-
-
-
     /**
-     * Test simple du Seam Carving - retire 50 pixels de largeur.
+     * Ouvre le dialogue Seam Carving pour redimensionner l'image.
      */
     @FXML
     private void handleSeamCarving() {
-        if (!imageModel.hasImage()) {
-            System.out.println("Pas d'image chargée");
-            return;
+        try {
+            // Créer et afficher le SeamCarvingDialog
+            SeamCarvingDialogController.show(this, (javafx.stage.Stage) imageView.getScene().getWindow(), currentImage, imageModel);
+        } catch (Exception e) {
+            showAlert("Erreur", "Impossible d'ouvrir le SeamCarvingDialog : " + e.getMessage());
         }
-
-        // Retirer 50 pixels (hardcodé pour tester)
-        WritableImage resizedImage = seamCarver.resizeOptimized(imageModel, 50);
-
-        // Mettre à jour l'affichage
-        imageModel.setImage(resizedImage);
-        currentImage.set(resizedImage);
-
-        System.out.println("Seam Carving appliqué : -50 pixels");
     }
 
 
