@@ -1,6 +1,5 @@
 package imageprocessingapp.model.structures;
 
-import imageprocessingapp.model.ImageModel;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
@@ -10,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EnergyCalculatorTest {
 
-    private ImageModel imageModel;
     private WritableImage testImage;
 
     @BeforeEach
@@ -30,7 +28,6 @@ class EnergyCalculatorTest {
                 pixelWriter.setColor(x, y, color);
             }
         }
-        imageModel = new ImageModel(testImage);
     }
 
     @Test
@@ -48,9 +45,8 @@ class EnergyCalculatorTest {
             for (int x=0; x<10; x++)
                 pw.setColor(x, y, Color.BLACK);
 
-        ImageModel model = new ImageModel(img);
         EnergyCalculator ec = new EnergyCalculator();
-        double[][] energy = ec.computeEnergyMap(model);
+        double[][] energy = ec.computeEnergyMap(img);
 
         for (int y=0; y<10; y++)
             for (int x=0; x<10; x++)
@@ -60,7 +56,7 @@ class EnergyCalculatorTest {
     @Test
     void computeEnergyMapBasicTest() {
         EnergyCalculator ec = new EnergyCalculator();
-        double[][] energy = ec.computeEnergyMap(imageModel);
+        double[][] energy = ec.computeEnergyMap(testImage);
 
         int width = (int) testImage.getWidth();
         int height = (int) testImage.getHeight();
@@ -82,4 +78,3 @@ class EnergyCalculatorTest {
         assertTrue(hasPositive, "La carte d'énergie devrait contenir des valeurs positives.");
     }
 }
-

@@ -2,12 +2,16 @@ package imageprocessingapp.controller;
 
 import imageprocessingapp.model.ImageModel;
 import imageprocessingapp.service.edit.SeamCarvingService;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
@@ -29,6 +33,11 @@ public class SeamCarvingDialogController {
     // Sliders pour les dimensions cibles
     @FXML private Slider widthSlider;
     @FXML private Slider heightSlider;
+
+
+    // ProgressBar et Label pour chargement
+    @FXML private ProgressBar progressBar;
+    @FXML private Label progressLabel;
 
     // Propriété observable pour l'image liée à l'ImageView
     private ObjectProperty<Image> currentImage;
@@ -132,6 +141,7 @@ public class SeamCarvingDialogController {
         if (heightSlider != null) {
             heightSlider.setId("heightSlider");
         }
+/*
 
         // Ajout de listeners pour la prévisualisation en temps réel
         widthSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -141,6 +151,7 @@ public class SeamCarvingDialogController {
         heightSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             updatePreview();
         });
+*/
 
         // Si l'image est déjà définie, configurer les sliders
         if (originalWritableImage != null && widthSlider != null && heightSlider != null) {
@@ -184,53 +195,90 @@ public class SeamCarvingDialogController {
     }
 
     /**
-     * Applique les modifications et ferme la fenêtre.
+     * Applique les modifications avec barre de progression.
      */
     private void okPressed() {
-        // Mettre à jour la propriété d'image du MainController
-        if (mainController != null && currentImage != null) {
-            mainController.currentImageProperty().set(currentImage.get());
-            imageModel.setImage(currentImage.get());
-        }
-        dialogStage.close();
-    }
-
-    /**
-     * Met à jour la prévisualisation de l'image avec les dimensions cibles.
-     */
-    private void updatePreview() {
-        // Vérification des paramètres d'entrée
-        if (imageModel == null || !imageModel.hasImage() || currentImage == null || originalWritableImage == null) {
-            return;
-        }
-
         int targetWidth = (int) widthSlider.getValue();
         int targetHeight = (int) heightSlider.getValue();
-
         int currentWidth = (int) originalWritableImage.getWidth();
         int currentHeight = (int) originalWritableImage.getHeight();
 
-        // Vérifier que les dimensions cibles sont valides
-        if (targetWidth > currentWidth || targetHeight > currentHeight) {
-            // Si les dimensions sont trop grandes, afficher l'image originale
-            currentImage.set(originalImage);
-            return;
-        }
-
         if (targetWidth == currentWidth && targetHeight == currentHeight) {
-            // Si les dimensions sont identiques, afficher l'image originale
-            currentImage.set(originalImage);
+            dialogStage.close();
             return;
         }
 
-        try {
-            // Appliquer le Seam Carving avec la boucle de suppression de seams
-            WritableImage resizedImage = seamCarvingService.resize(originalWritableImage, targetWidth, targetHeight);
-            currentImage.set(resizedImage);
-        } catch (IllegalArgumentException e) {
-            // En cas d'erreur, afficher l'image originale
-            currentImage.set(originalImage);
+        // Afficher la barre de progression
+        if (progressBar != null) {
+            progressBar.setVisible(true);
+            progressBar.setProgress(0);
         }
+        if (progressLabel != null) {
+            progressLabel.setVisible(true);
+            progressLabel.setText("0%");
+        }
+
+        // Désactiver les boutons
+        okButton.setDisable(true);
+        cancelButton.setDisable(true);
+
+        // Lancer dans un thread séparé pour pouvoir faire tourner le seam carving ET la progress bar simultanément
+        new Thread(() -> {
+            try {
+                WritableImage result = seamCarvingService.resize(
+                        originalWritableImage,
+                        targetWidth,
+                        targetHeight
+                );
+
+                // Revenir sur le thread JavaFX pour mettre à jour l'UI
+                Platform.runLater(() -> {
+                    if (mainController != null && currentImage != null) {
+                        currentImage.set(result);
+                        imageModel.setImage(result);
+                    }
+                    dialogStage.close();
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> dialogStage.close());
+            }
+        }).start();
+
+        // Timer pour mettre à jour la barre
+        updateProgressBar();
+    }
+
+    private void updateProgressBar() {
+        new Thread(() -> {
+            while (progressBar.isVisible()) {
+                try {
+                    Thread.sleep(200);  // Mettre à jour toutes les 200ms
+
+                    // Calculer le pourcentage
+                    int total = seamCarvingService.seamCarver.totalSeams;
+                    int current = seamCarvingService.seamCarver.currentSeam;
+
+                    if (total > 0) {
+                        double progress = (double) current / total;
+
+                        Platform.runLater(() -> {
+                            if (progressBar != null) {
+                                progressBar.setProgress(progress);
+                            }
+                            if (progressLabel != null) {
+                                int percent = (int)(progress * 100);
+                                progressLabel.setText(percent + "%");
+                            }
+                        });
+                    }
+
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }).start();
     }
 
     /**

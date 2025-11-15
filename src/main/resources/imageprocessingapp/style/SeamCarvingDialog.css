@@ -77,3 +77,25 @@
     -fx-max-width: 260px;
     -fx-min-width: 150px;
 }
+
+/* ===== BARRE DE PROGRESSION ===== */
+
+/* Container (track) de la barre de progression */
+#progressBar .track {
+-fx-background-color: #dddddd;
+-fx-background-radius: 8;
+-fx-pref-height: 14;
+}
+
+/* Partie remplie (bar) de la progression */
+#progressBar .bar {
+-fx-background-color: linear-gradient(to right, #a6f4bb, #6dd18e);
+-fx-background-radius: 8;
+}
+
+/* Label du pourcentage */
+#progressLabel {
+-fx-font-size: 11px;
+-fx-text-fill: #666;
+-fx-font-weight: bold;
+}

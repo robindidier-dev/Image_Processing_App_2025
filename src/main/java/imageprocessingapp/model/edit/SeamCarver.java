@@ -19,6 +19,11 @@ public class SeamCarver {
 
     private final EnergyCalculator energyCalculator;
 
+
+    // Variable pour stocker la progression
+    public int currentSeam = 0;
+    public int totalSeams = 0;
+
     public SeamCarver() {
         this.energyCalculator = new EnergyCalculator();
     }
@@ -26,56 +31,37 @@ public class SeamCarver {
     /**
      * Redimensionne l'image en supprimant un nombre donné de coutures verticales.
      * Méthode principale qui orchestre tout le processus de Seam Carving.
+     * Version optimisée finale : évite la création de nouvelle ImageModel
+     * + utilise getPixels()/setPixels() au lieu de getColor()/setColor()
      *
      * @param imageModel modèle contenant l'image source
      * @param numberOfSeams nombre de coutures à supprimer (= pixels à retirer en largeur)
      * @return nouvelle image redimensionnée
      */
-    /**
-     * Version optimisée : supprime plusieurs coutures par batch.
-     */
-    public WritableImage resizeOptimized(ImageModel imageModel, int numberOfSeams) {
+    public WritableImage resize(ImageModel imageModel, int numberOfSeams) {
         WritableImage currentImage = imageModel.getWritableImage();
 
-        int batchSize = 5;  // Trouver 5 coutures avant de les supprimer
+        totalSeams = numberOfSeams;
 
-        while (numberOfSeams > 0) {
-            int seamsThisBatch = Math.min(batchSize, numberOfSeams);
+        for (int i = 0; i < numberOfSeams; i++) {
 
-            // Liste pour stocker les coutures à supprimer
-            List<List<Integer>> allSeams = new ArrayList<>();
+            currentSeam = i+1;
 
-            // Image virtuelle pour calculer les coutures suivantes
-            WritableImage virtualImage = currentImage;
+            // 1. Calculer la carte d'énergie directement, sans créer d'ImageModel à chaque tour de boucle
+            double[][] energyMap = energyCalculator.computeEnergyMap(currentImage);
 
-            // Trouver plusieurs coutures
-            for (int i = 0; i < seamsThisBatch; i++) {
-                // Calculer l'énergie sur l'image virtuelle
-                ImageModel tempModel = new ImageModel(virtualImage);
-                double[][] energyMap = energyCalculator.computeEnergyMap(tempModel);
-                double[][] cumulativeEnergy = computeCumulativeEnergy(energyMap);
+            // 2. Calculer l'énergie cumulative
+            double[][] cumulativeEnergy = computeCumulativeEnergy(energyMap);
 
-                // Trouver une couture
-                List<Integer> seam = findSeam(cumulativeEnergy);
-                allSeams.add(seam);
+            // 3. Trouver la couture de moindre énergie
+            List<Integer> seam = findSeam(cumulativeEnergy);
 
-                // Supprimer la couture VIRTUELLEMENT (pas sur l'image réelle)
-                // pour que la prochaine couture soit différente
-                virtualImage = removeSeam(virtualImage, seam);
-            }
-
-            // Maintenant supprimer TOUTES les coutures de l'image RÉELLE
-            for (List<Integer> seam : allSeams) {
-                currentImage = removeSeam(currentImage, seam);
-            }
-
-            numberOfSeams -= seamsThisBatch;
-            System.out.println("Batch terminé, reste " + numberOfSeams);
+            // 4. Supprimer la couture avec la version optimisée
+            currentImage = removeSeam(currentImage, seam);
         }
 
         return currentImage;
     }
-
 
 
 
@@ -87,7 +73,6 @@ public class SeamCarver {
      * @return matrice d'énergie cumulative
      */
     public double[][] computeCumulativeEnergy(double[][] energyMap) {
-        // TODO: implémenter la programmation dynamique pour la somme minimale
 
         int nbLignes = energyMap.length;
         int nbColonnes = energyMap[0].length;
@@ -120,7 +105,6 @@ public class SeamCarver {
      * @return liste d'indices de colonnes (un par ligne) représentant la couture
      */
     public List<Integer> findSeam(double[][] cumulativeEnergy) {
-        // TODO: implémenter le backtracking pour récupérer la couture minimale
 
         List<Integer> seamList = new ArrayList<>();
 
@@ -190,66 +174,43 @@ public class SeamCarver {
      * @return nouvelle image avec une largeur réduite d'un pixel
      */
     public WritableImage removeSeam(WritableImage image, List<Integer> seam) {
-        // TODO: implémenter le décalage des pixels pour retirer la couture
-
         int hauteur = (int) image.getHeight();
         int largeur = (int) image.getWidth();
-        WritableImage newImage = new WritableImage(largeur - 1, hauteur);
 
+        // Lire tous les pixels d'un coup (getPixels() est plus optimisée que getColor())
         PixelReader reader = image.getPixelReader();
-        PixelWriter writer = newImage.getPixelWriter();
+        int[] pixels = new int[largeur * hauteur];
+        reader.getPixels(0, 0, largeur, hauteur,
+                javafx.scene.image.PixelFormat.getIntArgbInstance(),
+                pixels, 0, largeur);
 
+
+        int[] newPixels = new int[(largeur - 1) * hauteur];
+
+        // Copier les pixels en excluant la couture
         for (int i = 0; i < hauteur; i++) {
             int colToRemove = seam.get(i);
+            int srcPos = i * largeur;
+            int dstPos = i * (largeur - 1);
 
-            for (int j = 0; j < colToRemove; j++) {
-                writer.setColor(j, i, reader.getColor(j, i));
-            }
+            // Copier avant la couture (arraycopy() pour optimiser)
+            System.arraycopy(pixels, srcPos, newPixels, dstPos, colToRemove);
 
-            for (int j = colToRemove + 1; j < largeur; j++) {
-                writer.setColor(j - 1, i, reader.getColor(j, i));
-            }
+            // Copier après la couture (décalé)
+            System.arraycopy(pixels, srcPos + colToRemove + 1,
+                    newPixels, dstPos + colToRemove,
+                    largeur - colToRemove - 1);
         }
 
-        return newImage;
-    }
-
-
-
-
-    /**
-     * Trace la couture sur l'image au lieu de la supprimer (pour visualisation/debug).
-     *
-     * @param image image JavaFX source
-     * @param seam  liste d'indices de colonnes de la couture à visualiser
-     * @return image avec la couture tracée en rouge
-     */
-    public WritableImage drawSeam(WritableImage image, List<Integer> seam) {
-        int hauteur = (int) image.getHeight();
-        int largeur = (int) image.getWidth();
-
-        // Créer une copie de l'image
-        WritableImage newImage = new WritableImage(largeur, hauteur);
-
-        PixelReader reader = image.getPixelReader();
+        // Écrire tous les pixels d'un coup (setPixels() est plus optimisée)
+        WritableImage newImage = new WritableImage(largeur - 1, hauteur);
         PixelWriter writer = newImage.getPixelWriter();
-
-        // Copier tous les pixels
-        for (int x = 0; x < largeur; x++) {
-            for (int y = 0; y < hauteur; y++) {
-                writer.setColor(x, y, reader.getColor(x, y));
-            }
-        }
-
-        // Tracer la couture en rouge
-        for (int i = 0; i < hauteur; i++) {
-            int colToMark = seam.get(i);
-            writer.setColor(colToMark, i, Color.RED);
-        }
+        writer.setPixels(0, 0, largeur - 1, hauteur,
+                javafx.scene.image.PixelFormat.getIntArgbInstance(),
+                newPixels, 0, largeur - 1);
 
         return newImage;
     }
-
 }
 
 

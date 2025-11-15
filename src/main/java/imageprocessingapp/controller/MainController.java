@@ -22,6 +22,7 @@ import javax.imageio.ImageIO;
 // JavaFX imports
 import javafx.event.ActionEvent;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -34,6 +35,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -125,8 +127,15 @@ public class MainController {
     private PaintTool paintTool;
 
 
-    // Outil pour rogner : utilisation des méthodes onMouseDragged, onMouseReleased, etc -> outil
+    /**
+     * Outil pour rogner : utilisation des méthodes onMouseDragged, onMouseReleased, etc -> outil
+     */
     private CropTool cropTool;
+
+    /**
+     * Contrôleur du zoom
+     */
+    private ZoomController zoomController;
 
     // ===== PROPRIÉTÉS POUR LE SUIVI DES MODIFICATIONS DES CANVAS =====
     
@@ -188,6 +197,7 @@ public class MainController {
         setupColorDisplay();
         setupDelayedInitialization();
         setupSeamCarvingService();
+        setupZoom();
     }
 
     private void setupImageModel() {
@@ -354,6 +364,9 @@ public class MainController {
                 } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.W) {
                     closeApplication();
                     event.consume();
+                } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.R) {
+                    resetView();
+                    event.consume();
                 }
             });
         }
@@ -394,6 +407,13 @@ public class MainController {
                 }
             });
         }
+    }
+
+    public void setupZoom() {
+        zoomController = new ZoomController(imageContainer);
+        zoomController.setMainController(this);
+        zoomController.setupZoom();
+        zoomController.setupTranslate();
     }
 
     // ===== MÉTHODES POUR LE SUIVI DES MODIFICATIONS =====
@@ -623,6 +643,10 @@ public class MainController {
         
         // Réinitialiser les flags de modification
         markCanvasAsSaved();
+    }
+
+    public void resetView() {
+        zoomController.resetView();
     }
 
     // ===== GESTION DES OUTILS =====
