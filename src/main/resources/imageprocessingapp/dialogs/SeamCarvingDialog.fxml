@@ -66,7 +66,7 @@
             styleClass="seamSlider" />
 
     <!-- Boutons compacts -->
-    <HBox GridPane.rowIndex="4" 
+    <HBox GridPane.rowIndex="4"
           GridPane.columnIndex="0"
           GridPane.columnSpan="2"
           alignment="CENTER"
@@ -75,5 +75,16 @@
         <Button fx:id="cancelButton" text="Cancel" minWidth="60" />
         <Button fx:id="okButton" text="Ok" minWidth="60" />
     </HBox>
+
+
+    <!-- Barre de progression tout en bas -->
+    <VBox spacing="5" alignment="CENTER"
+          GridPane.rowIndex="5"
+          GridPane.columnIndex="0"
+          GridPane.columnSpan="2"
+          style="-fx-padding: 15 0 0 0;">
+        <ProgressBar fx:id="progressBar" prefWidth="250" visible="false" />
+        <Label fx:id="progressLabel" text="0%" visible="false" />
+    </VBox>
 
 </GridPane>

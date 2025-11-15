@@ -1,6 +1,8 @@
 package imageprocessingapp.model.structures;
 
 import imageprocessingapp.model.ImageModel;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import static java.lang.Math.sqrt;
 
@@ -20,68 +22,69 @@ public class EnergyCalculator {
 
 
     /**
-     * Retourne le niveau de gris du pixel et traite les cas de bord
-     *
-     * @param imageModel modèle contenant l'image source
-     * @return double entre 0 et 1
-     */
-    private double pixel(ImageModel imageModel, int x, int y) {
-        int width = imageModel.getWidth();
-        int height = imageModel.getHeight();
-
-        // Si les coordonnées fournies débordent, on reprend les bords pour ne pas avoir d'incohérence de gradient
-        if (x < 0) {
-            x = 0;
-        }
-        if (x >= width) {
-            x = width - 1;
-        }
-        if (y < 0) {
-            y = 0;
-        }
-
-        if (y >= height) {
-            y = height - 1;
-        }
-
-        Color c = imageModel.getPixelColor(x, y);
-            // Niveau de gris via Rec. 709 pour mimer perception de l'oeil
-            return 0.299 * c.getRed() + 0.587 * c.getGreen() + 0.114 * c.getBlue();
-    }
-
-
-    /**
      * Retourne une carte d'énergie (une valeur par pixel) sous forme de matrice.
-     *
-     * @param imageModel modèle contenant l'image source
+     * Version optimisée : lit tous les pixels d'un coup au lieu de getColor() pixel par pixel.
+     * @param image l'image JavaFX source
      * @return matrice d'énergie de taille {@code hauteur x largeur}
      */
-    public double[][] computeEnergyMap(ImageModel imageModel) {
-        int width = imageModel.getWidth();
-        int height = imageModel.getHeight();
+    public double[][] computeEnergyMap(WritableImage image) {
 
+        // on utilise une WritableImage plutôt qu'une imageModel pour pouvoir utiliser getPixels() au lieu de getPixelColor() (qui est plus coûteuse)
+
+        int width = (int) image.getWidth();
+        int height = (int) image.getHeight();
         double[][] energy = new double[height][width];
 
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
+        // Lire tous les pixels d'un coup (énorme gain de temps)
+        PixelReader reader = image.getPixelReader();
+        int[] pixels = new int[width * height];
+        reader.getPixels(0, 0, width, height,
+                javafx.scene.image.PixelFormat.getIntArgbInstance(),
+                pixels, 0, width);
 
-
-                // Energie horizontale (convolution avec Gx)
-                double valueWidth = 0;
-                // Energie verticale (convolution avec Gy)
-                double valueHeight = 0;
-
-                for (int i=-1; i<2; i++) {
-                    for (int j=-1; j<2; j++) {
-                        valueWidth += Gx[1+i][1+j] * pixel(imageModel, x+j, y+i); // convolution de Gx par le voisinage du pixel
-                        valueHeight += Gy[1+i][1+j] * pixel(imageModel, x+j, y+i); // convolution de Gx par le voisinage du pixel
-                    }
-                }
-                // Combinaison des energies dans les deux sens
-                energy[y][x] = sqrt(valueWidth*valueWidth + valueHeight*valueHeight);
+        // Précalculer les niveaux de gris pour tous les pixels
+        double[][] grayLevels = new double[height][width];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = pixels[y * width + x];
+                int r = (pixel >> 16) & 0xFF;
+                int g = (pixel >> 8) & 0xFF;
+                int b = pixel & 0xFF;
+                grayLevels[y][x] = 0.299 * r / 255.0 + 0.587 * g / 255.0 + 0.114 * b / 255.0;
             }
         }
+
+        // Calculer l'énergie avec les niveaux de gris précalculés
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                double valueWidth = 0;
+                double valueHeight = 0;
+
+                for (int i = -1; i < 2; i++) {
+                    for (int j = -1; j < 2; j++) {
+                        double pixelValue = getGrayLevel(grayLevels, width, height, x + j, y + i);
+                        valueWidth += Gx[1 + i][1 + j] * pixelValue;
+                        valueHeight += Gy[1 + i][1 + j] * pixelValue;
+                    }
+                }
+
+                energy[y][x] = Math.sqrt(valueWidth * valueWidth + valueHeight * valueHeight);
+            }
+        }
+
         return energy;
+    }
+
+    /**
+     * Récupère le niveau de gris avec gestion des bords.
+     */
+    private double getGrayLevel(double[][] grayLevels, int width, int height, int x, int y) {
+        if (x < 0) x = 0;
+        if (x >= width) x = width - 1;
+        if (y < 0) y = 0;
+        if (y >= height) y = height - 1;
+
+        return grayLevels[y][x];
     }
 }
 

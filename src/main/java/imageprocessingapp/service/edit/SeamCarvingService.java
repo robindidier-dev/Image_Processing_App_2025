@@ -20,7 +20,7 @@ public class SeamCarvingService {
     }
 
     private final EnergyCalculator energyCalculator;
-    private final SeamCarver seamCarver;
+    public final SeamCarver seamCarver;
 
     public SeamCarvingService() {
         this.energyCalculator = new EnergyCalculator();
@@ -57,7 +57,7 @@ public class SeamCarvingService {
 
     private WritableImage removeVerticalSeams(WritableImage image, int count) {
         ImageModel model = new ImageModel(image);
-        return seamCarver.resizeOptimized(model, count);
+        return seamCarver.resize(model, count);
     }
 
     private WritableImage removeHorizontalSeams(WritableImage image, int count) {
