@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Ces tests vérifient l'intégration entre le SeamCarvingDialogController,
  * le MainController, le SeamCarvingService et l'interface utilisateur (FXML).
  */
-class SeamCarvingDialogTest {
+class SeamCarvingDialogIT {
 
     @BeforeAll
     static void initJavaFX() throws Exception {
@@ -266,5 +266,113 @@ class SeamCarvingDialogTest {
         assertNotNull(restoredImage, "Restored image should not be null");
         assertEquals(10, restoredImage.getWidth(), "Original width should be restored");
         assertEquals(10, restoredImage.getHeight(), "Original height should be restored");
+    }
+
+    /**
+     * Teste que le dialogue gère correctement les valeurs de sliders invalides (trop grandes).
+     * 
+     * Vérifie que :
+     * - Le dialogue ne plante pas avec des valeurs de sliders supérieures aux dimensions
+     * - Le dialogue restaure l'image originale si les dimensions sont invalides
+     */
+    @Test
+    void resizeHandlesInvalidDimensions() throws Exception {
+        WritableImage baseImage = new WritableImage(10, 10);
+        var pixelWriter = baseImage.getPixelWriter();
+        
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                pixelWriter.setColor(x, y, Color.rgb(x * 25, y * 25, 128));
+            }
+        }
+
+        ImageModel imageModel = new ImageModel();
+        imageModel.setImage(baseImage);
+
+        MainController mainController = new MainController();
+        ObjectProperty<Image> currentImage = mainController.currentImageProperty();
+        currentImage.set(baseImage);
+
+        AtomicReference<Image> result = new AtomicReference<>();
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(SeamCarvingDialogController.class.getResource("/imageprocessingapp/dialogs/SeamCarvingDialog.fxml"));
+                Parent root = loader.load();
+                SeamCarvingDialogController controller = loader.getController();
+
+                Stage stage = new Stage();
+                stage.setScene(new Scene(root));
+
+                controller.setStage(stage);
+                controller.setMainController(mainController);
+                controller.setCurrentImage(currentImage);
+                controller.setImageModel(imageModel);
+
+                Slider widthSlider = (Slider) root.lookup("#widthSlider");
+                Slider heightSlider = (Slider) root.lookup("#heightSlider");
+                
+                assertNotNull(widthSlider, "Width slider should be present");
+                assertNotNull(heightSlider, "Height slider should be present");
+                
+                // Tester avec des valeurs trop grandes (devrait restaurer l'image originale)
+                Platform.runLater(() -> {
+                    try {
+                        widthSlider.setValue(20); // Plus grand que l'image originale (10)
+                        heightSlider.setValue(20);
+                        
+                        // Attendre un peu pour que la prévisualisation soit mise à jour
+                        CountDownLatch previewLatch = new CountDownLatch(1);
+                        AtomicReference<Image> previousImage = new AtomicReference<>(currentImage.get());
+                        
+                        javafx.beans.value.ChangeListener<Image> previewListener = new javafx.beans.value.ChangeListener<Image>() {
+                            @Override
+                            public void changed(javafx.beans.value.ObservableValue<? extends Image> obs, Image oldImg, Image newImg) {
+                                if (newImg != null && !newImg.equals(previousImage.get())) {
+                                    previousImage.set(newImg);
+                                    previewLatch.countDown();
+                                }
+                            }
+                        };
+                        
+                        currentImage.addListener(previewListener);
+                        
+                        new Thread(() -> {
+                            try {
+                                if (!previewLatch.await(2, TimeUnit.SECONDS)) {
+                                    Platform.runLater(() -> previewLatch.countDown());
+                                }
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }).start();
+                        
+                        previewLatch.await(2, TimeUnit.SECONDS);
+                        currentImage.removeListener(previewListener);
+                        
+                        // Annuler le dialogue
+                        Button cancelButton = (Button) root.lookup("#cancelButton");
+                        assertNotNull(cancelButton, "Cancel button should be present");
+                        cancelButton.fire();
+                        
+                        result.set(mainController.currentImageProperty().get());
+                        latch.countDown();
+                    } catch (Exception e) {
+                        fail("Exception: " + e.getMessage());
+                        latch.countDown();
+                    }
+                });
+            } catch (Exception e) {
+                fail("Exception: " + e.getMessage());
+                latch.countDown();
+            }
+        });
+
+        assertTrue(latch.await(10, TimeUnit.SECONDS), "Test did not complete in time");
+        Image finalImage = result.get();
+        assertNotNull(finalImage, "Image should not be null after cancel");
+        assertEquals(10, finalImage.getWidth(), "Image should be restored to original width");
+        assertEquals(10, finalImage.getHeight(), "Image should be restored to original height");
     }
 }

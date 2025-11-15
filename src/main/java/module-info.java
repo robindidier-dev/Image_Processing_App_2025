@@ -14,12 +14,11 @@ module imageprocessingapp {
     exports imageprocessingapp.model; // Package du modèle accessible aux autres modules
     exports imageprocessingapp.model.tools; // Package des outils accessible aux autres modules
     exports imageprocessingapp.model.filters; // Package des filtres (mosaïque, seam carving)
+    exports imageprocessingapp.model.structures; // Package des structures de données (Point2D, KdTree, etc.)
     exports imageprocessingapp.service.filters; // Couche service partagée
     exports imageprocessingapp.view.components; // Package des composants d'interface
     exports imageprocessingapp.controller; // Package des contrôleurs
     
     // Ouvert à javafx.fxml pour l'injection de dépendances
-    opens imageprocessingapp.view to javafx.fxml;
     opens imageprocessingapp.controller to javafx.fxml;
-    opens imageprocessingapp.dialogs to javafx.fxml;
 }

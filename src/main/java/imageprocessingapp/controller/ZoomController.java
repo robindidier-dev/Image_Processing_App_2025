@@ -1,6 +1,5 @@
 package imageprocessingapp.controller;
 
-import imageprocessingapp.model.tools.Tool;
 import javafx.scene.layout.Region;
 
 /**

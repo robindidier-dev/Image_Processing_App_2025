@@ -30,4 +30,23 @@ class Point2DTest {
         assertEquals(p, new Point2D(1.0, 2.0));
         assertNotEquals(p, new Point2D(1.0, 2.0000001));
     }
+
+    @Test
+    void equalsWithNull() {
+        Point2D p = new Point2D(1.0, 2.0);
+        assertNotEquals(p, null);
+    }
+
+    @Test
+    void equalsWithSameReference() {
+        Point2D p = new Point2D(1.0, 2.0);
+        assertEquals(p, p);
+    }
+
+    @Test
+    void equalsWithDifferentCoordinates() {
+        Point2D p1 = new Point2D(1.0, 2.0);
+        Point2D p2 = new Point2D(2.0, 1.0);
+        assertNotEquals(p1, p2);
+    }
 }

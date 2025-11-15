@@ -36,11 +36,14 @@
         <MenuBar>
             <!-- Menu Fichier avec options Open/Save -->
             <Menu text="File">
-                <MenuItem text="New" onAction="#newCanvas"/>  <!-- Crée un nouveau canvas -->
-                <MenuItem text="Open" onAction="#openImage"/>  <!-- Ouvre une image depuis le disque -->
-                <MenuItem text="Save" onAction="#saveImage"/>  <!-- Sauvegarde l'image modifiée -->
+                <MenuItem text="New" onAction="#newCanvas" accelerator="Shortcut+N"/>  <!-- Crée un nouveau canvas -->
+                <MenuItem text="Open" onAction="#openImage" accelerator="Shortcut+O"/>  <!-- Ouvre une image depuis le disque -->
+                <MenuItem text="Save" onAction="#saveImage" accelerator="Shortcut+S"/>  <!-- Sauvegarde l'image modifiée -->
             </Menu>
             <Menu text="Edit">
+                <MenuItem text="Undo" onAction="#undo" accelerator="Shortcut+Z"/>
+                <MenuItem text="Redo" onAction="#redo" accelerator="Shortcut+Y"/>
+                <SeparatorMenuItem/>
                 <MenuItem text="Horizontal Symmetry" onAction="#applyHorizontalSymmetry"/>
                 <MenuItem text="Vertical Symmetry" onAction="#applyVerticalSymmetry"/>
                 <MenuItem text="Crop" onAction="#startCropping"/>

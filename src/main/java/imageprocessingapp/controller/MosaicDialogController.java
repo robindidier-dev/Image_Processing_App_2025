@@ -145,6 +145,11 @@ public class MosaicDialogController {
 
     // Fermeture de la fenêtre et mise à jour
     private void okPressed() {
+        // Sauvegarder l'état avant d'appliquer les modifications
+        if (mainController != null) {
+            mainController.saveStateForUndo();
+        }
+        
         // Mettre à jour la propriété d'image du MainController avec la mosaïque actuelle
         if (mainController != null && currentImage != null) {
             mainController.currentImageProperty().set(currentImage.get());
