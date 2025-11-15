@@ -14,6 +14,23 @@
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="imageprocessingapp.controller.MainController">
+
+    <!-- ZONE CENTRALE : Zone d'affichage de l'image -->
+    <center>
+        <!-- StackPane permet d'empiler plusieurs composants -->
+        <StackPane fx:id="imageContainer">
+            <!-- ImageView pour afficher l'image chargée -->
+            <!-- Dimensions fixes 800x600 avec ratio préservé -->
+            <ImageView fx:id="imageView" fitWidth="800" fitHeight="600" preserveRatio="true"/>
+
+            <!-- Canvas transparent superposé pour le masque d'opacité -->
+            <Canvas fx:id="maskCanvas" mouseTransparent="true" width="800" height="600"/>
+        </StackPane>
+    </center>
+
+
+
+
     <!-- ZONE SUPÉRIEURE : Barre de menu -->
     <top>
         <MenuBar>
@@ -44,17 +61,6 @@
         </VBox>
     </left>
 
-    <!-- ZONE CENTRALE : Zone d'affichage de l'image -->
-    <center>
-        <!-- StackPane permet d'empiler plusieurs composants -->
-        <StackPane fx:id="imageContainer">
-            <!-- ImageView pour afficher l'image chargée -->
-            <!-- Dimensions fixes 800x600 avec ratio préservé -->
-            <ImageView fx:id="imageView" fitWidth="800" fitHeight="600" preserveRatio="true"/>
 
-            <!-- Canvas transparent superposé pour le masque d'opacité -->
-            <Canvas fx:id="maskCanvas" mouseTransparent="true" width="800" height="600"/>
-        </StackPane>
-    </center>
 
 </BorderPane>

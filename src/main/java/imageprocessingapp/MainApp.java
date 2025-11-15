@@ -63,6 +63,10 @@ public class MainApp extends Application {
             } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.W) {
                 controller.closeApplication();
                 event.consume();
+            } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.R) {
+                controller.resetView();
+                System.out.println("ok");
+                event.consume();
             }
         });
     }
