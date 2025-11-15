@@ -6,7 +6,7 @@
 <GridPane styleClass="root-pane"
           xmlns="http://javafx.com/javafx"
           xmlns:fx="http://javafx.com/fxml"
-          fx:controller="imageprocessingapp.controller.SeamCarvingDialogController"
+      fx:controller="imageprocessingapp.controller.SeamCarvingDialogController"
           prefWidth="300"
           prefHeight="150"
           stylesheets="@../style/SeamCarvingDialog.css">
@@ -20,10 +20,10 @@
         <RowConstraints prefHeight="30"/>
     </rowConstraints>
 
-    <columnConstraints>
+            <columnConstraints>
         <ColumnConstraints percentWidth="40" halignment="CENTER"/>
         <ColumnConstraints percentWidth="60" halignment="CENTER"/>
-    </columnConstraints>
+            </columnConstraints>
 
     <!-- Label compact pour la largeur -->
     <Label text="Largeur cible"
@@ -75,7 +75,6 @@
         <Button fx:id="cancelButton" text="Cancel" minWidth="60" />
         <Button fx:id="okButton" text="Ok" minWidth="60" />
     </HBox>
-
 
     <!-- Barre de progression tout en bas -->
     <VBox spacing="5" alignment="CENTER"

@@ -111,10 +111,8 @@ public class PaintTool implements Tool {
         gc.setLineCap(StrokeLineCap.ROUND);
         gc.setLineJoin(StrokeLineJoin.ROUND);
 
-        if (prevX >= 0 && prevY >= 0) {
-            gc.strokeLine(prevX, prevY, x, y);
-            notifyModification();
-        }
+        gc.strokeLine(prevX, prevY, x, y);
+        notifyModification();
         prevX = x;
         prevY = y;
     }

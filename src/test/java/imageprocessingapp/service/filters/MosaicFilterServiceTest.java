@@ -58,9 +58,35 @@ class MosaicFilterServiceTest {
     }
 
     @Test
+    void applyMosaicWithEmptyImageModel() {
+        // Test le cas où imageModel n'est pas null mais n'a pas d'image
+        ImageModel emptyModel = new ImageModel();
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.applyMosaic(emptyModel, 5, MosaicFilter.MosaicSeedMode.RANDOM);
+        });
+    }
+
+    @Test
     void applyMosaicWithNegativePointCount() {
         assertThrows(IllegalArgumentException.class, () -> {
             service.applyMosaic(imageModel, -1, MosaicFilter.MosaicSeedMode.RANDOM);
         });
+    }
+
+    @Test
+    void applyMosaicWithNullMode() {
+        // Quand mode est null, devrait utiliser RANDOM par défaut
+        Image result = service.applyMosaic(imageModel, 5, null);
+        assertNotNull(result);
+        assertEquals(testImage.getWidth(), result.getWidth());
+        assertEquals(testImage.getHeight(), result.getHeight());
+    }
+
+    @Test
+    void applyMosaicWithRegularGridMode() {
+        Image result = service.applyMosaic(imageModel, 5, MosaicFilter.MosaicSeedMode.REGULAR_GRID);
+        assertNotNull(result);
+        assertEquals(testImage.getWidth(), result.getWidth());
+        assertEquals(testImage.getHeight(), result.getHeight());
     }
 }

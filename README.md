@@ -6,6 +6,8 @@ Une application JavaFX de traitement d'image développée en équipe avec les fo
 - **Opérations géométriques** (symétries, rotations, crop)
 - **Seam Carving** pour redimensionner intelligemment les images
 - **Système de couleurs** avec sélecteur RGB
+- **Undo/Redo** pour annuler et refaire les opérations
+- **Zoom et navigation** (molette de souris, glisser-déposer, reset)
 
 ## Architecture du projet
 
@@ -41,6 +43,11 @@ src/main/java/
    │     └── SeamCarver.java                # Algorithmes seam carving (DP + remove)
    ├── service/                             # Couche service (couche S)
    │  ├── DrawingService.java               # Logique technique canvas
+   │  ├── FileManagementService.java        # Gestion des fichiers (ouvrir, sauvegarder)
+   │  ├── ImageOperationService.java        # Opérations sur l'image (rotation, symétrie, crop)
+   │  ├── CanvasStateManager.java           # Gestion de l'état du canvas (modifications)
+   │  ├── UnsavedChangesHandler.java        # Gestion des modifications non sauvegardées
+   │  ├── UndoRedoService.java              # Gestion de l'historique undo/redo
    │  ├── filters/
    │  │  └── MosaicFilterService.java       # Orchestration mosaïque
    │  └── edit/
@@ -48,6 +55,9 @@ src/main/java/
    ├── controller/                          # Logique de contrôle (couche C)
    │  ├── MainController.java               # Coordination globale
    │  ├── ToolSelectorController.java       # Gestion ToggleGroup outils
+   │  ├── DialogCoordinator.java            # Coordination des dialogues modaux
+   │  ├── EventHandlerManager.java          # Gestion des événements souris/clavier
+   │  ├── ZoomController.java               # Gestion du zoom et de la navigation
    │  ├── ColorPickerDialogController.java
    │  ├── MosaicDialogController.java
    │  └── SeamCarvingDialogController.java  # Dialogue seam carving (UI -> Service)
@@ -139,7 +149,8 @@ Le pattern **Model-View-Controller** organise le code selon trois responsabilit�
 **Choix techniques :**
 - **JavaFX Properties** : Binding automatique entre Model et View
 - **FXML** : Séparation UI/logique pour faciliter les modifications
-- **Service Layer** : Logique technique réutilisable (`DrawingService`)
+- **Service Layer** : Logique technique réutilisable (`DrawingService`, `FileManagementService`, etc.)
+- **Séparation des responsabilités** : Refactorisation du `MainController` en services dédiés pour améliorer la testabilité
 - **Interface Tool** : Polymorphisme pour les outils de dessin
 - **KdTree** : Accélère la recherche du plus proche voisin (mosaïque)
 - **Seam Carving** : Redimensionnement via énergie cumulative (programmation dynamique)
@@ -147,14 +158,22 @@ Le pattern **Model-View-Controller** organise le code selon trois responsabilit�
 ### Composants principaux
 
 - **MainApp** : Lance l'application JavaFX
-- **MainController** : Interactions utilisateur et coordination
+- **MainController** : Interactions utilisateur et coordination (refactorisé pour utiliser des services)
 - **ImageModel** : Représente une image modifiable avec accès aux pixels
 - **MainView.fxml** : Interface utilisateur avec menu, toolbar et zone d'image
 - **DrawingService** : Opérations sur le canvas de dessin
-- **MosaicFilterService** : Service applicatif pour l’effet mosaïque
+- **FileManagementService** : Gestion des fichiers (ouvrir, sauvegarder, nouveau canvas)
+- **ImageOperationService** : Opérations sur l'image (rotation, symétrie, crop)
+- **CanvasStateManager** : Gestion de l'état du canvas (modifications, sauvegarde)
+- **UnsavedChangesHandler** : Gestion des modifications non sauvegardées
+- **UndoRedoService** : Gestion de l'historique des modifications (piles undo/redo, limite de 20 états)
+- **DialogCoordinator** : Coordination des dialogues modaux (couleur, mosaïque, seam carving)
+- **EventHandlerManager** : Gestion des événements souris et clavier
+- **ZoomController** : Gestion du zoom (molette de souris) et de la translation (glisser-déposer)
+- **MosaicFilterService** : Service applicatif pour l'effet mosaïque
 - **ToolSelectorController** : Sélection des outils (ToggleGroup)
-- **MosaicFilter** : Effet mosaïque à partir d’un KdTree de seeds
-- **EnergyCalculator / SeamCarver** : Calcul d’énergie et suppression de seams
+- **MosaicFilter** : Effet mosaïque à partir d'un KdTree de seeds
+- **EnergyCalculator / SeamCarver** : Calcul d'énergie et suppression de seams
 - **MosaicDialog / SeamCarvingDialog** : Paramétrage des filtres (UI)
 
 ##  Comment lancer

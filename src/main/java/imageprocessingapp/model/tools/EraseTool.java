@@ -131,17 +131,14 @@ public class EraseTool implements Tool {
         gc.setLineCap(StrokeLineCap.ROUND);
         gc.setLineJoin(StrokeLineJoin.ROUND);
 
-        if (prevX >= 0 && prevY >= 0) {
-
-            if (imageModel.hasImage()) {
-                // Gomme transparente sur l'image
-                eraseRectLine(prevX, prevY, x, y);
-            } else {
-                // Gomme "blanche" sur le canvas vide
-                gc.strokeLine(prevX, prevY, x, y);
-            }
-            notifyModification();
+        if (imageModel.hasImage()) {
+            // Gomme transparente sur l'image
+            eraseRectLine(prevX, prevY, x, y);
+        } else {
+            // Gomme "blanche" sur le canvas vide
+            gc.strokeLine(prevX, prevY, x, y);
         }
+        notifyModification();
         prevX = x;
         prevY = y;
     }

@@ -3,10 +3,8 @@ package imageprocessingapp.service.edit;
 import imageprocessingapp.model.ImageModel;
 import imageprocessingapp.model.edit.SeamCarver;
 import imageprocessingapp.model.operations.RotateOperation;
-import imageprocessingapp.model.structures.EnergyCalculator;
 import javafx.scene.image.WritableImage;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -19,11 +17,9 @@ public class SeamCarvingService {
         HORIZONTAL
     }
 
-    private final EnergyCalculator energyCalculator;
     public final SeamCarver seamCarver;
 
     public SeamCarvingService() {
-        this.energyCalculator = new EnergyCalculator();
         this.seamCarver = new SeamCarver();
     }
 

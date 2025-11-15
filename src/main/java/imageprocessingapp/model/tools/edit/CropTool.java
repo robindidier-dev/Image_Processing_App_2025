@@ -6,7 +6,6 @@ import imageprocessingapp.model.tools.Tool;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 
 /**
@@ -23,7 +22,6 @@ public class CropTool implements Tool {
     private Rectangle2D cropArea;
 
     // Références externes
-    private ImageView imageView;
     private Canvas maskCanvas;
     private DrawingService drawingService;
 
@@ -96,10 +94,6 @@ public class CropTool implements Tool {
 
     public Rectangle2D getCropArea() {
         return cropArea;
-    }
-
-    public void setImageView(ImageView imageView) {
-        this.imageView = imageView;
     }
 
     public void setMaskCanvas(Canvas maskCanvas) {

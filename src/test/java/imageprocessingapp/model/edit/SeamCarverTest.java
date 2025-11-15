@@ -256,4 +256,214 @@ class SeamCarverTest {
         assertEquals(9, (int) resultRight.getWidth());
     }
 
+    @Test
+    void findSeamWithRightEdgePath() {
+        // Test pour couvrir le cas où le backtracking atteint le bord droit
+        // Créer une carte d'énergie où la colonne la plus à droite a toujours la plus faible énergie
+        int nbLignes = 5;
+        int nbColonnes = 5;
+        double[][] cumulativeEnergy = new double[nbLignes][nbColonnes];
+        
+        // Remplir avec des valeurs élevées partout
+        for (int i = 0; i < nbLignes; i++) {
+            for (int j = 0; j < nbColonnes; j++) {
+                cumulativeEnergy[i][j] = 100.0;
+            }
+        }
+        
+        // Créer un chemin de faible énergie sur le bord droit (colonne 4)
+        // La dernière ligne doit avoir le minimum à la colonne la plus à droite
+        for (int i = 0; i < nbLignes; i++) {
+            cumulativeEnergy[i][nbColonnes - 1] = 1.0 + i; // Énergie croissante mais toujours minimale
+        }
+        
+        // S'assurer que la colonne avant le bord droit a une énergie plus élevée
+        // pour forcer le choix du bord droit pendant le backtracking
+        for (int i = 0; i < nbLignes; i++) {
+            cumulativeEnergy[i][nbColonnes - 2] = 10.0 + i; // Plus élevé que le bord droit
+        }
+        
+        List<Integer> seam = seamCarver.findSeam(cumulativeEnergy);
+        
+        assertNotNull(seam);
+        assertEquals(nbLignes, seam.size());
+        
+        // Vérifier que la couture passe par le bord droit au moins une fois
+        // (ce qui déclenchera la branche else if (j == nbColonnes - 1))
+        boolean touchesRightEdge = false;
+        for (int colIndex : seam) {
+            if (colIndex == nbColonnes - 1) {
+                touchesRightEdge = true;
+                break;
+            }
+        }
+        
+        // Le minimum à la dernière ligne devrait être à la colonne la plus à droite
+        // donc le backtracking devrait passer par le bord droit
+        assertTrue(touchesRightEdge || seam.get(seam.size() - 1) == nbColonnes - 1,
+            "La couture devrait toucher le bord droit pour couvrir cette branche");
+    }
+
+    @Test
+    void findSeamRightEdgeChoosesRight() {
+        // Test pour couvrir la branche : cumulativeEnergy[i][nbColonnes-1] < cumulativeEnergy[i][nbColonnes - 2]
+        // → choisit nbColonnes-1
+        int nbLignes = 3;
+        int nbColonnes = 3;
+        double[][] cumulativeEnergy = new double[nbLignes][nbColonnes];
+        
+        // Remplir avec des valeurs élevées
+        for (int i = 0; i < nbLignes; i++) {
+            for (int j = 0; j < nbColonnes; j++) {
+                cumulativeEnergy[i][j] = 100.0;
+            }
+        }
+        
+        // Dernière ligne : minimum au bord droit
+        cumulativeEnergy[2][2] = 1.0;  // bord droit (minimum)
+        cumulativeEnergy[2][1] = 10.0;
+        cumulativeEnergy[2][0] = 20.0;
+        
+        // Ligne 1 : bord droit plus petit que bord-1 (choisit 2)
+        cumulativeEnergy[1][2] = 2.0;  // bord droit (plus petit)
+        cumulativeEnergy[1][1] = 5.0;  // colonne du milieu
+        cumulativeEnergy[1][0] = 50.0;
+        
+        // Ligne 0 : bord droit plus petit que bord-1 (choisit 2)
+        cumulativeEnergy[0][2] = 3.0;  // bord droit (plus petit)
+        cumulativeEnergy[0][1] = 6.0;  // colonne du milieu
+        cumulativeEnergy[0][0] = 50.0;
+        
+        List<Integer> seam = seamCarver.findSeam(cumulativeEnergy);
+        
+        assertNotNull(seam);
+        assertEquals(nbLignes, seam.size());
+        // Le backtracking devrait rester sur le bord droit (colonne 2)
+        assertEquals(2, (int) seam.get(0), "Première ligne devrait être au bord droit");
+        assertEquals(2, (int) seam.get(1), "Deuxième ligne devrait être au bord droit");
+        assertEquals(2, (int) seam.get(2), "Dernière ligne devrait être au bord droit");
+    }
+
+    @Test
+    void findSeamRightEdgeChoosesLeft() {
+        // Test pour couvrir la branche : cumulativeEnergy[i][nbColonnes-1] >= cumulativeEnergy[i][nbColonnes - 2]
+        // → choisit nbColonnes-2
+        int nbLignes = 3;
+        int nbColonnes = 3;
+        double[][] cumulativeEnergy = new double[nbLignes][nbColonnes];
+        
+        // Remplir avec des valeurs élevées
+        for (int i = 0; i < nbLignes; i++) {
+            for (int j = 0; j < nbColonnes; j++) {
+                cumulativeEnergy[i][j] = 100.0;
+            }
+        }
+        
+        // Dernière ligne : minimum au bord droit
+        cumulativeEnergy[2][2] = 1.0;  // bord droit (minimum)
+        cumulativeEnergy[2][1] = 10.0;
+        cumulativeEnergy[2][0] = 20.0;
+        
+        // Ligne 1 : bord-1 plus petit que bord droit (choisit 1)
+        cumulativeEnergy[1][2] = 5.0;  // bord droit (plus grand)
+        cumulativeEnergy[1][1] = 2.0;  // colonne du milieu (plus petite)
+        cumulativeEnergy[1][0] = 50.0;
+        
+        // Ligne 0 : bord-1 plus petit que bord droit (choisit 1)
+        cumulativeEnergy[0][2] = 6.0;  // bord droit (plus grand)
+        cumulativeEnergy[0][1] = 3.0;  // colonne du milieu (plus petite)
+        cumulativeEnergy[0][0] = 50.0;
+        
+        List<Integer> seam = seamCarver.findSeam(cumulativeEnergy);
+        
+        assertNotNull(seam);
+        assertEquals(nbLignes, seam.size());
+        // Le backtracking devrait choisir la colonne 1 (nbColonnes-2) quand on est au bord droit
+        assertEquals(2, (int) seam.get(2), "Dernière ligne devrait être au bord droit");
+        // Les lignes précédentes devraient choisir la colonne 1 car elle a une énergie plus faible
+        assertEquals(1, (int) seam.get(1), "Deuxième ligne devrait choisir colonne 1");
+        assertEquals(1, (int) seam.get(0), "Première ligne devrait choisir colonne 1");
+    }
+
+    @Test
+    void findSeamLeftEdgeChoosesLeft() {
+        // Test pour couvrir la branche : cumulativeEnergy[i][0] < cumulativeEnergy[i][1]
+        // → choisit 0 (bord gauche)
+        int nbLignes = 3;
+        int nbColonnes = 3;
+        double[][] cumulativeEnergy = new double[nbLignes][nbColonnes];
+        
+        // Remplir avec des valeurs élevées
+        for (int i = 0; i < nbLignes; i++) {
+            for (int j = 0; j < nbColonnes; j++) {
+                cumulativeEnergy[i][j] = 100.0;
+            }
+        }
+        
+        // Dernière ligne : minimum au bord gauche
+        cumulativeEnergy[2][0] = 1.0;  // bord gauche (minimum)
+        cumulativeEnergy[2][1] = 10.0;
+        cumulativeEnergy[2][2] = 20.0;
+        
+        // Ligne 1 : bord gauche plus petit que colonne 1 (choisit 0)
+        cumulativeEnergy[1][0] = 2.0;  // bord gauche (plus petit)
+        cumulativeEnergy[1][1] = 5.0;  // colonne du milieu
+        cumulativeEnergy[1][2] = 50.0;
+        
+        // Ligne 0 : bord gauche plus petit que colonne 1 (choisit 0)
+        cumulativeEnergy[0][0] = 3.0;  // bord gauche (plus petit)
+        cumulativeEnergy[0][1] = 6.0;  // colonne du milieu
+        cumulativeEnergy[0][2] = 50.0;
+        
+        List<Integer> seam = seamCarver.findSeam(cumulativeEnergy);
+        
+        assertNotNull(seam);
+        assertEquals(nbLignes, seam.size());
+        // Le backtracking devrait rester sur le bord gauche (colonne 0)
+        assertEquals(0, (int) seam.get(0), "Première ligne devrait être au bord gauche");
+        assertEquals(0, (int) seam.get(1), "Deuxième ligne devrait être au bord gauche");
+        assertEquals(0, (int) seam.get(2), "Dernière ligne devrait être au bord gauche");
+    }
+
+    @Test
+    void findSeamLeftEdgeChoosesRight() {
+        // Test pour couvrir la branche : cumulativeEnergy[i][0] >= cumulativeEnergy[i][1]
+        // → choisit 1 (colonne suivante)
+        int nbLignes = 3;
+        int nbColonnes = 3;
+        double[][] cumulativeEnergy = new double[nbLignes][nbColonnes];
+        
+        // Remplir avec des valeurs élevées
+        for (int i = 0; i < nbLignes; i++) {
+            for (int j = 0; j < nbColonnes; j++) {
+                cumulativeEnergy[i][j] = 100.0;
+            }
+        }
+        
+        // Dernière ligne : minimum au bord gauche
+        cumulativeEnergy[2][0] = 1.0;  // bord gauche (minimum)
+        cumulativeEnergy[2][1] = 10.0;
+        cumulativeEnergy[2][2] = 20.0;
+        
+        // Ligne 1 : colonne 1 plus petite que bord gauche (choisit 1)
+        cumulativeEnergy[1][0] = 5.0;  // bord gauche (plus grand)
+        cumulativeEnergy[1][1] = 2.0;  // colonne du milieu (plus petite)
+        cumulativeEnergy[1][2] = 50.0;
+        
+        // Ligne 0 : colonne 1 plus petite que bord gauche (choisit 1)
+        cumulativeEnergy[0][0] = 6.0;  // bord gauche (plus grand)
+        cumulativeEnergy[0][1] = 3.0;  // colonne du milieu (plus petite)
+        cumulativeEnergy[0][2] = 50.0;
+        
+        List<Integer> seam = seamCarver.findSeam(cumulativeEnergy);
+        
+        assertNotNull(seam);
+        assertEquals(nbLignes, seam.size());
+        // Le backtracking devrait choisir la colonne 1 quand on est au bord gauche
+        assertEquals(0, (int) seam.get(2), "Dernière ligne devrait être au bord gauche");
+        // Les lignes précédentes devraient choisir la colonne 1 car elle a une énergie plus faible
+        assertEquals(1, (int) seam.get(1), "Deuxième ligne devrait choisir colonne 1");
+        assertEquals(1, (int) seam.get(0), "Première ligne devrait choisir colonne 1");
+    }
+
 }

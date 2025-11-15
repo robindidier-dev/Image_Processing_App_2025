@@ -178,5 +178,7 @@ Feature complète répartie par couche MVC.
 - [x] Implémenter EnergyCalculator pour calcul gradient des pixels
 - [x] Créer SeamCarver avec programmation dynamique et backtracking
 - [x] Ajouter SeamCarvingDialog et entrée menu Edit > Resize with Seam Carving
-- [ ] Compléter tests unitaires/intégration et Javadoc pour toutes les features
-- [ ] Finition (implémentation/optimisation de service)
+- [x] Implémenter Undo/Redo avec UndoRedoService et intégration dans le menu Edit
+- [x] Implémenter Zoom avec ZoomController (molette, translation, reset view)
+- [x] Compléter tests unitaires/intégration et Javadoc pour toutes les features
+- [x] Finition (implémentation/optimisation de service)

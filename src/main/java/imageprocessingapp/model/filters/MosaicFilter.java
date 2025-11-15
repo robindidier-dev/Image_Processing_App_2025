@@ -86,7 +86,7 @@ public class MosaicFilter {
         double stepY = height / (double) rows;
     
         int index = 0;
-        for (int row = 0; row < rows && index < pointCount; row++) {
+        for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols && index < pointCount; col++) {
                 int x = (int) Math.round((col + 0.5) * stepX);
                 int y = (int) Math.round((row + 0.5) * stepY);
@@ -130,8 +130,8 @@ public class MosaicFilter {
 
                 if (nearest.isPresent()) {
                     Point2D seed = nearest.get();
-                    // Test si le target = nearest pour ne pas que nearest soit deux fois dans le dictionnaire
-                    if (!nearest.equals(target)) {
+                    // Test si le target = seed pour ne pas que seed soit deux fois dans le dictionnaire
+                    if (!seed.equals(target)) {
                         List<Point2D> cell = cells.get(seed);
                         cell.add(target);
                     }

@@ -77,7 +77,7 @@ public class ImageModel {
         if (currentImage != null) {
             return createCompositeWithImage(drawingCanvas);
         } else {
-            return createCanvasOnlyImage(drawingCanvas);
+            return drawingCanvas.snapshot(null, null);
         }
     }
 
@@ -117,28 +117,15 @@ public class ImageModel {
                 int canvasX = (int) (x / scaleX);
                 int canvasY = (int) (y / scaleY);
                 
-                if (canvasX < canvasSnapshot.getWidth() && canvasY < canvasSnapshot.getHeight()) {
-                    Color canvasColor = canvasReader.getColor(canvasX, canvasY);
+                Color canvasColor = canvasReader.getColor(canvasX, canvasY);
                     
-                    // Vérifier la transparence
-                    if (canvasColor.getOpacity() > 0.01) {
-                        compositeWriter.setColor(x, y, canvasColor);
-                    }
+                // Vérifier la transparence
+                if (canvasColor.getOpacity() > 0.01) {
+                    compositeWriter.setColor(x, y, canvasColor);
                 }
             }
         }
-        
         return compositeImage;
-    }
-
-    /**
-     * Crée une image à partir du canvas seul (cas du canvas par défaut).
-     * 
-     * @param drawingCanvas Le canvas contenant les dessins
-     * @return L'image du canvas
-     */
-    private Image createCanvasOnlyImage(Canvas drawingCanvas) {
-        return drawingCanvas.snapshot(null, null);
     }
 
     /**

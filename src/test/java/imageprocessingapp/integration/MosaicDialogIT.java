@@ -25,13 +25,28 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MosaicDialogTest {
+/**
+ * Tests d'intégration pour le dialogue de mosaïque.
+ * 
+ * Ces tests vérifient l'intégration entre le MosaicDialogController,
+ * le MainController, le MosaicFilterService et l'interface utilisateur (FXML).
+ */
+class MosaicDialogIT {
 
     @BeforeAll
     static void initJavaFX() throws Exception {
         JavaFxTestInitializer.initToolkit();
     }
 
+    /**
+     * Teste que le dialogue applique l'effet mosaïque lors de la confirmation.
+     * 
+     * Vérifie que :
+     * - Le slider est présent et fonctionnel
+     * - La modification du slider déclenche la prévisualisation
+     * - La confirmation applique l'effet mosaïque à l'image
+     * - L'image résultante a les mêmes dimensions mais des couleurs modifiées
+     */
     @Test
     void mosaicDialogAppliesMosaicOnConfirm() throws Exception {
         WritableImage baseImage = new WritableImage(2, 2);
@@ -98,6 +113,66 @@ class MosaicDialogTest {
                 || Math.abs(color.getGreen() - original.getGreen()) > 0.05
                 || Math.abs(color.getBlue() - original.getBlue()) > 0.05,
             "Mosaic effect should change the pixel color compared to the original image");
+    }
+
+    /**
+     * Teste que le dialogue gère correctement les valeurs de slider invalides.
+     * 
+     * Vérifie que :
+     * - Le dialogue ne plante pas avec des valeurs de slider à 0
+     * - Le dialogue peut être annulé même après modification du slider
+     */
+    @Test
+    void mosaicDialogHandlesInvalidSliderValues() throws Exception {
+        WritableImage baseImage = new WritableImage(10, 10);
+        baseImage.getPixelWriter().setColor(0, 0, Color.RED);
+
+        ImageModel imageModel = new ImageModel();
+        imageModel.setImage(baseImage);
+
+        MainController mainController = new MainController();
+        ObjectProperty<Image> currentImage = mainController.currentImageProperty();
+        currentImage.set(baseImage);
+
+        AtomicReference<Image> result = new AtomicReference<>();
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(MosaicDialogController.class.getResource("/imageprocessingapp/dialogs/MosaicDialog.fxml"));
+                Parent root = loader.load();
+                MosaicDialogController controller = loader.getController();
+
+                Stage stage = new Stage();
+                stage.setScene(new Scene(root));
+
+                controller.setStage(stage);
+                controller.setMainController(mainController);
+                controller.setCurrentImage(currentImage);
+                controller.setImageModel(imageModel);
+
+                Slider slider = (Slider) root.lookup("#mosaicSlider");
+                assertNotNull(slider, "Slider should be present");
+                
+                // Tester avec une valeur à 0 (devrait restaurer l'image originale)
+                slider.setValue(0);
+                
+                // Annuler le dialogue
+                Button cancelButton = (Button) root.lookup("#cancelButton");
+                assertNotNull(cancelButton, "Cancel button should be present");
+                cancelButton.fire();
+
+                result.set(mainController.currentImageProperty().get());
+            } catch (Exception e) {
+                fail("Exception during MosaicDialog with invalid values: " + e.getMessage());
+            } finally {
+                latch.countDown();
+            }
+        });
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS), "Test did not complete in time");
+        Image finalImage = result.get();
+        assertNotNull(finalImage, "Image should not be null after cancel");
     }
 }
 

@@ -2,6 +2,7 @@ package imageprocessingapp.integration;
 
 import imageprocessingapp.model.ImageModel;
 import imageprocessingapp.model.tools.PickerTool;
+import imageprocessingapp.util.JavaFxTestInitializer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.canvas.Canvas;
@@ -15,22 +16,31 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests d'intégration pour l'outil de pipette (PickerTool).
+ * 
+ * Ces tests vérifient l'intégration entre le PickerTool, l'ImageView,
+ * le Canvas et la propriété de couleur sélectionnée.
+ */
 class PickerToolIT {
-
-    private static volatile boolean jfxStarted = false;
 
     @BeforeAll
     static void initJavaFX() throws Exception {
-        if (jfxStarted) return;
-        CountDownLatch latch = new CountDownLatch(1);
-        Platform.startup(latch::countDown);
-        assertTrue(latch.await(5, TimeUnit.SECONDS), "JavaFX Platform failed to start in time");
-        jfxStarted = true;
+        JavaFxTestInitializer.initToolkit();
     }
 
+    /**
+     * Teste que l'outil de pipette sélectionne la couleur depuis l'image.
+     * 
+     * Vérifie que :
+     * - Le PickerTool peut être créé et configuré
+     * - L'appel à onMousePressed sur un pixel de l'image met à jour la couleur sélectionnée
+     * - La couleur sélectionnée correspond à la couleur du pixel cliqué
+     */
     @Test
     void picksColorFromImage() {
         WritableImage image = new WritableImage(20, 20);
@@ -55,8 +65,20 @@ class PickerToolIT {
         assertEquals(Color.GREEN, selected.get());
     }
 
+    /**
+     * Teste que l'outil de pipette sélectionne la couleur depuis le canvas.
+     * 
+     * Vérifie que :
+     * - Le PickerTool peut sélectionner la couleur depuis le canvas
+     * - L'appel à onMousePressed sur un pixel du canvas met à jour la couleur sélectionnée
+     * - La couleur sélectionnée correspond à la couleur du pixel cliqué sur le canvas
+     */
     @Test
-    void picksColorFromCanvas() {
+    void picksColorFromCanvas() throws InterruptedException {
+        AtomicReference<Color> resultColor = new AtomicReference<>();
+        CountDownLatch latch = new CountDownLatch(1);
+        
+        Platform.runLater(() -> {
         ImageView imageView = new ImageView();
         Canvas canvas = new Canvas(20, 20);
         canvas.getGraphicsContext2D().setFill(Color.BLUE);
@@ -74,7 +96,12 @@ class PickerToolIT {
                 false, false, null);
 
         tool.onMousePressed(press, new ImageModel());
-        assertEquals(Color.BLUE, selected.get());
+            resultColor.set(selected.get());
+            latch.countDown();
+        });
+        
+        assertTrue(latch.await(5, TimeUnit.SECONDS), "Test did not complete in time");
+        assertEquals(Color.BLUE, resultColor.get());
     }
 }
 

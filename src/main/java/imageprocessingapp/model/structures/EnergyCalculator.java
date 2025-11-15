@@ -1,10 +1,7 @@
 package imageprocessingapp.model.structures;
 
-import imageprocessingapp.model.ImageModel;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
-import javafx.scene.paint.Color;
-import static java.lang.Math.sqrt;
 
 /**
  * Calcule la carte d'énergie d'une image.

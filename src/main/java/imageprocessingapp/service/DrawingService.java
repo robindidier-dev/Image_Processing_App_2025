@@ -25,10 +25,7 @@ public class DrawingService {
     private Canvas drawingCanvas;
     private ImageModel imageModel;
     private Runnable onCanvasModified;
-
-
     private Canvas maskCanvas;
-
 
     /**
      * Initialise le service avec le canvas et le modèle d'image.
