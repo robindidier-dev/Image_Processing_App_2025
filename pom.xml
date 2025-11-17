@@ -1,81 +1,121 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  POM (Project Object Model) : Fichier de configuration Maven qui définit le projet, ses dépendances,
+  ses plugins et ses paramètres de build. Maven utilise ce fichier pour compiler, tester et packager le projet.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <!-- ===== IDENTIFIANT DU PROJET ===== -->
+  <!-- Ces identifiants permettent de référencer le projet de manière unique -->
   <groupId>Robin_Adrien_PA</groupId>  <!-- Identifiant du groupe qui développe le projet (ici les noms des développeurs) -->
   <artifactId>ImageProcessingApp</artifactId>  <!-- Nom technique du projet -->
   <version>1.0-SNAPSHOT</version>  <!-- Version du projet (SNAPSHOT indique une version en développement) -->
   <name>ImageProcessingApp</name>  <!-- Nom lisible du projet -->
 
+  <!-- ===== PROPRIÉTÉS GLOBALES ===== -->
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <junit.version>5.10.2</junit.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> 
+    <junit.version>5.10.2</junit.version> 
   </properties>
 
+  <!-- ===== DÉPENDANCES ===== -->
   <dependencies>
+    <!-- JavaFX : Framework pour créer des interfaces graphiques -->
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
       <version>22.0.1</version>
+      <!-- Contient les composants UI (Button, Label, TextField, etc.) -->
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-fxml</artifactId>
       <version>22.0.1</version>
+      <!-- Permet de charger les fichiers FXML (définition d'interface en XML) -->
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-base</artifactId>
       <version>22.0.1</version>
+      <!-- Classes de base JavaFX (Properties, Bindings, etc.) -->
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-graphics</artifactId>
       <version>22.0.1</version>
+      <!-- Moteur de rendu graphique (Canvas, Image, etc.) -->
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-swing</artifactId>
       <version>22.0.1</version>
+      <!-- Intégration JavaFX avec Swing (si nécessaire) -->
     </dependency>
-<dependency>
+    
+    <!-- JUnit 5 : Framework de tests unitaires -->
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>${junit.version}</version>
-      <scope>test</scope>
+      <scope>test</scope> 
+      <!-- API pour écrire les tests (@Test, assertions, etc.) -->
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
+      <!-- Moteur d'exécution des tests (nécessaire pour lancer les tests) -->
     </dependency>
   </dependencies>
 
+  <!-- ===== CONFIGURATION DU BUILD ===== -->
+  <!-- Définit les plugins Maven qui seront utilisés lors de la compilation, des tests, etc. -->
   <build>
     <plugins>
+      <!-- 
+        Plugin JaCoCo : Mesure la couverture de code par les tests
+        Génère un rapport HTML montrant quelles lignes de code sont testées
+      -->
       <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.8.11</version>
           <executions>
+              <!-- 
+                Exécution 1 : Préparer l'agent JaCoCo
+                S'exécute automatiquement avant les tests pour instrumenter le code
+                L'agent enregistre quelles lignes sont exécutées pendant les tests
+              -->
               <execution>
                   <id>prepare-agent</id>
                   <goals>
-                      <goal>prepare-agent</goal>
+                      <goal>prepare-agent</goal>  <!-- Crée un agent Java qui surveille l'exécution du code -->
                   </goals>
               </execution>
+              <!-- 
+                Exécution 2 : Générer le rapport de couverture
+                S'exécute après la phase "test" pour créer le rapport HTML
+                Le rapport est disponible dans target/site/jacoco/index.html
+              -->
               <execution>
                   <id>report</id>
-                  <phase>test</phase>
+                  <phase>test</phase>  <!-- S'exécute après la phase de test -->
                   <goals>
-                      <goal>report</goal>
+                      <goal>report</goal>  <!-- Génère le rapport HTML de couverture -->
                   </goals>
               </execution>
           </executions>
       </plugin>
+      
+      <!-- 
+        Plugin Surefire : Exécute les tests 
+        Par défaut, Maven exécute automatiquement les tests lors de mvn test
+        Ce plugin configure quels fichiers de test inclure
+      -->
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -87,6 +127,11 @@
               </includes>
           </configuration>
       </plugin>
+      
+      <!-- 
+        Plugin Compiler : Configure la compilation Java
+        Définit la version de Java utilisée pour compiler le code source
+      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -96,6 +141,12 @@
           <target>21</target>
         </configuration>
       </plugin>
+      
+      <!-- 
+        Plugin JavaFX : Permet de lancer l'application JavaFX facilement
+        Simplifie le lancement d'applications JavaFX avec toutes les dépendances nécessaires
+        Commande : mvn javafx:run
+      -->
       <plugin>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
@@ -123,7 +174,17 @@
     </plugins>
   </build>
 
+  <!-- ===== PROFILS MAVEN ===== -->
+  <!-- 
+    Les profils permettent d'activer différentes configurations selon le contexte
+    (développement, CI/CD, production, etc.)
+    Activation : mvn -Pci <command>
+  -->
   <profiles>
+    <!-- 
+      Profil CI (Continuous Integration) : Configuration pour l'intégration continue
+      Utilisé dans les pipelines CI/CD (GitHub Actions, Jenkins, etc.)
+    -->
     <profile>
       <id>ci</id>
       <build>

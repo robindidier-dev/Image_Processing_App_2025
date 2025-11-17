@@ -42,6 +42,7 @@ public class PickerTool implements Tool {
      * Constructeur de l'outil pipette.
      * 
      * @param imageView L'ImageView sur laquelle lire la couleur des pixels
+     * @param drawingCanvas Le Canvas contenant le dessin superposé (peut être null).
      * @param selectedColor La propriété observable contenant la couleur sélectionnée
      */
     public PickerTool(ImageView imageView, Canvas drawingCanvas, ObjectProperty<Color> selectedColor) {
@@ -58,11 +59,17 @@ public class PickerTool implements Tool {
      */
     @Override
     public void onMousePressed(MouseEvent event, ImageModel imageModel) {
+
+        // D'abord, couleur de l'image composite (image + dessin), via le modèle.
         Color color = sampleCompositeColor(event, imageModel);
 
+
+        // Puis, on essaie de récupérer la couleur directement depuis le Canvas de dessin.
         if (color == null) {
             color = readColorFromCanvas(event);
         }
+
+        // Enfin, couleur récupérée depuis l'image affichée dans l'ImageView seule.
         if (color == null) {
             color = readColorFromImage(event);
         }
@@ -83,6 +90,8 @@ public class PickerTool implements Tool {
             // Capturer le contenu du canvas comme image
             WritableImage snapshot = drawingCanvas.snapshot(null, null);
 
+
+            // Calcul des ratios de mise à l'échelle entre affichage et image réelle
             double viewWidth = drawingCanvas.getBoundsInParent().getWidth();
             double viewHeight = drawingCanvas.getBoundsInParent().getHeight();
             double canvasWidth = snapshot.getWidth();
@@ -114,6 +123,8 @@ public class PickerTool implements Tool {
                 return null;
             }
 
+
+            // Calcul des ratios de mise à l'échelle entre affichage et image réelle
             double viewWidth = imageView.getBoundsInParent().getWidth();
             double viewHeight = imageView.getBoundsInParent().getHeight();
             double imageWidth = image.getWidth();
@@ -126,14 +137,14 @@ public class PickerTool implements Tool {
             int imageY = (int) (event.getY() * scaleY);
 
             PixelReader reader = image.getPixelReader();
-            // Vérification explicite de toutes les conditions (ligne 133)
-            // Décomposer l'opérateur && pour couvrir toutes les branches
+
+            // Vérification explicite des coordonnées pour éviter les erreurs d'index hors limites
             if (imageX < 0 || imageY < 0 || imageX >= imageWidth || imageY >= imageHeight) {
                 return null;
             }
             return reader.getColor(imageX, imageY);
         } catch (Exception e) {
-            // Gestion des exceptions (lignes 140-143)
+            // Gestion des exceptions
             System.out.println("Erreur lors de la lecture de l'image : " + e.getMessage());
             return null;
         }
@@ -143,7 +154,8 @@ public class PickerTool implements Tool {
      * Lit la couleur de l'image composite (image + dessin) via le modèle.
      */
     private Color sampleCompositeColor(MouseEvent event, ImageModel imageModel) {
-        // Vérification explicite de toutes les conditions (ligne 151)
+
+        // Vérifie d'abord si une image composite peut être générée
         boolean hasComposite = imageModelHasComposite(imageModel);
         if (!hasComposite) {
             return null;
@@ -152,17 +164,24 @@ public class PickerTool implements Tool {
             return null;
         }
 
+        // délègue la lecture couleur sur cette image
         return readCompositeColorFromModel(event, imageModel);
     }
 
+    /**
+     * Vérifie si le modèle contient une image ou un dessin actif pour composer l'image composite.
+     *
+     * @param imageModel Le modèle à vérifier.
+     * @return true si une image ou un dessin sont présents, false sinon.
+     */
     private boolean imageModelHasComposite(ImageModel imageModel) {
-        // Vérification explicite de toutes les conditions (ligne 159)
+
         if (imageModel == null) {
             return false;
         }
         boolean hasImage = imageModel.getImage() != null;
         boolean hasCanvas = drawingCanvas != null;
-        // Décomposer l'opérateur || pour couvrir toutes les branches
+
         if (hasImage) {
             return true;
         }
@@ -172,8 +191,17 @@ public class PickerTool implements Tool {
         return false;
     }
 
+
+    /**
+     * Lit la couleur à partir de l'image composite générée par le modèle.
+     * @param event L'événement de souris.
+     * @param imageModel Le modèle contenant la méthode de composition.
+     * @return La couleur du pixel composite ou null en cas d'erreur.
+     */
     private Color readCompositeColorFromModel(MouseEvent event, ImageModel imageModel) {
         try {
+
+            // Génère l'image composite image + dessin
             Image compositeImage = imageModel.createCompositeImage(drawingCanvas);
 
             double canvasWidth = drawingCanvas.getWidth();
@@ -200,12 +228,12 @@ public class PickerTool implements Tool {
 
     @Override
     public void onMouseDragged(MouseEvent event, ImageModel imageModel) {
-
+        // Pas d'action pour la pipette lors du drag
     }
 
     @Override
     public void onMouseReleased(MouseEvent event, ImageModel imageModel) {
-
+        // Pas d'action pour la pipette lors du relâchement du clic
     }
 
     @Override

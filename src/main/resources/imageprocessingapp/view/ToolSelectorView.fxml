@@ -31,7 +31,7 @@
                     </image>
                 </ImageView>
                 <!-- Texte -->
-                <Label text="Pinceau" style="-fx-font-size: 12px; -fx-text-fill: #333;" />
+                <Label text="Brush" style="-fx-font-size: 12px; -fx-text-fill: #333;" />
             </HBox>
         </graphic>
     </ToggleButton>
@@ -50,7 +50,7 @@
                     </image>
                 </ImageView>
                 <!-- Texte -->
-                <Label text="Gomme" style="-fx-font-size: 12px; -fx-text-fill: #333;" />
+                <Label text="Eraser" style="-fx-font-size: 12px; -fx-text-fill: #333;" />
             </HBox>
         </graphic>
     </ToggleButton>
@@ -68,7 +68,7 @@
                         <Image url="@../image/pipette.png"/>
                     </image>
                 </ImageView>
-                <Label text="Pipette" style="-fx-font-size: 12px; -fx-text-fill: #333;" />
+                <Label text="Color picker" style="-fx-font-size: 12px; -fx-text-fill: #333;" />
             </HBox>
         </graphic>
     </ToggleButton>
@@ -84,7 +84,7 @@
                 orientation="HORIZONTAL"
                 onMouseReleased="#brushSizeChanged" />
 
-        <Label text="Taille" style="-fx-font-size: 11px; -fx-text-fill: #555;" />
+        <Label text="Size" style="-fx-font-size: 11px; -fx-text-fill: #555;" />
     </VBox>
 
     <!-- Ajouter un spacer pour pousser le trait vers le bas -->

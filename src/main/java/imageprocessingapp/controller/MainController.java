@@ -46,112 +46,91 @@ import javafx.stage.Stage;
 public class MainController {
 
     // ===== COMPOSANTS FXML =====
+    // On déclare les composants FXML ici pour que le contrôleur MainController puisse
+    // accéder directement aux éléments de l’interface (ImageView, boutons, etc.) définis dans MainView.fxml.
+    // Cela permet de lier la logique Java aux composants de la vue : initialisation, gestion des événements, et mise à jour dynamique de l’UI.
     
-    @FXML
+    @FXML // ImageView pour afficher l'image chargée
     private ImageView imageView;
     
-    @FXML
+    @FXML // StackPane pour contenir l'image et le canvas
     private StackPane imageContainer;
     
-    @FXML
+    @FXML // ColorDisplay pour afficher la couleur sélectionnée
     private ColorDisplay colorDisplay;
 
-    @FXML
+    @FXML // ToolSelectorController pour sélectionner l'outil
     private ToolSelectorController toolSelectorController;
 
-    @FXML
+    @FXML // Canvas pour l'opacité lors du crop
     private Canvas maskCanvas; // pour l'opacité lors du crop
 
     // ===== PROPRIÉTÉS OBSERVABLES =====
-    
-    /**
-     * Couleur actuellement sélectionnée pour le dessin.
-     * Cette propriété est liée aux outils et au ColorDisplay.
-     */
+
+    // Les propriétés observables (JavaFX) permettent à différents composants de la vue et du modèle 
+    // d'être automatiquement notifiés et de réagir lors d’un changement de valeur.
+    // Cela facilite la synchronisation de l’UI et des données métier sans code de mise à jour manuel lourd.
+
+    // Couleur actuellement sélectionnée pour le dessin (liée aux outils et aperçu couleur).
     private final ObjectProperty<Color> selectedColor = new SimpleObjectProperty<>(Color.BLACK);
-    
-    /**
-     * Image actuellement chargée dans l'application.
-     * Cette propriété est liée à l'ImageView pour l'affichage.
-     */
+
+    // Image actuellement affichée/application (liée à l’ImageView : affichage, chargement, modifications).
     private final ObjectProperty<Image> currentImage = new SimpleObjectProperty<>();
-    
-    /**
-     * Outil actuellement actif (pinceau, pipette, etc.).
-     * Cette propriété détermine le comportement des interactions souris.
-     */
+
+    // Outil de dessin actif (pinceau, pipette…), détermine le comportement souris sur le canevas.
     private final ObjectProperty<Tool> activeTool = new SimpleObjectProperty<>();
 
     // ===== COMPOSANTS INTERNES =====
-    
-    /**
-     * Canvas transparent superposé à l'ImageView pour le dessin.
-     * Permet de dessiner par-dessus l'image sans la modifier directement.
-     */
+    // Les composants internes regroupent les objets qui encapsulent la logique métier,
+    // les outils graphiques et les services manipulant le cœur de l’application.
+    // Ils sont déclarés dans le MainController car ce dernier assure la coordination centrale
+    // entre la vue (UI) et ces différentes logiques internes.
+    // Leur déclaration ici simplifie la gestion d’événements et la mise à jour de l’interface,
+    // tout en respectant l’architecture MVC où le contrôleur agit comme chef d’orchestre.
+
+    // Canvas transparent superposé à l'ImageView pour le dessin.
     private Canvas drawingCanvas;
-    
-    /**
-     * Modèle de l'image contenant la logique métier.
-     * Gère les opérations sur les pixels et les modifications d'image.
-     */
+
+    // Modèle de l'image contenant la logique métier (gestion des opérations sur les pixels, application d’effets, etc.).
     private ImageModel imageModel;
 
-    /**
-     * Service de dessin pour gérer les opérations sur le canvas.
-     */
+    // Service de dessin pour gérer toutes les opérations sur le canvas (tracés, effacement, synchronisation entre la vue et le modèle).
     private DrawingService drawingService;
 
-    /**
-     * Instance de l'outil pinceau utilisé pour dessiner.
-     * Transmise au contrôleur de sélection d'outils pour modifier ses paramètres.
-     */
+    // Instance de l’outil pinceau pour le dessin libre sur le canvas.
     private PaintTool paintTool;
 
-    /**
-     * Outil pour rogner : utilisation des méthodes onMouseDragged, onMouseReleased, etc -> outil
-     */
+    // Outil dédié au rognage de l’image (il intercepte et gère les événements souris liés à la sélection/coupe).
     private CropTool cropTool;
 
-    /**
-     * Contrôleur du zoom
-     */
+    // Contrôleur dédié au zoom sur l’image dans l’interface (il gère le zoom et la translation de l’image).
     private ZoomController zoomController;
 
-    // ===== PROPRIÉTÉS POUR LE SUIVI DES MODIFICATIONS DES CANVAS =====
-    
-    /**
-     * Gestionnaire d'état du canvas.
-     */
+    // ===== SERVICES ET GESTIONNAIRES INTERNES =====
+    // Ces propriétés privées référencent les principaux services, gestionnaires et coordinateurs du cœur applicatif
+    // Déclarées dans le MainController, elles permettent à ce dernier de jouer pleinement son rôle de chef d’orchestre
+    // selon le pattern MVC (il relie la vue aux services/métier, facilite l’enchaînement logique des actions utilisateur,
+    // et assure la cohérence globale de l’application).
+
+    // Gère l’état d’enregistrement et de modification du canvas courant.
     private CanvasStateManager canvasStateManager;
-    
-    /**
-     * Gestionnaire des modifications non sauvegardées.
-     */
+
+    // Détecte et gère la présence de modifications non sauvegardées dans l’application.
     private UnsavedChangesHandler unsavedChangesHandler;
-    
-    /**
-     * Service de gestion des fichiers.
-     */
+
+    // Centralise toutes les opérations de gestion de fichiers : ouverture, sauvegarde, import/export.
     private FileManagementService fileManagementService;
-    
-    /**
-     * Service des opérations sur l'image.
-     */
+
+    // Fournit les outils et opérations métier liés à la manipulation d’image (filtres, ajustements, etc.).
     private ImageOperationService imageOperationService;
-    
-    /**
-     * Coordinateur des dialogues.
-     */
+
+    // Coordonne l’ouverture des dialogues modaux et la gestion de leur retour.
     private DialogCoordinator dialogCoordinator;
-    
-    /**
-     * Gestionnaire des événements.
-     */
+
+    // Gère l’enregistrement et l’organisation des écouteurs (events handlers) entre les différents composants.
     private EventHandlerManager eventHandlerManager;
-    
-    /**
-     * Service de gestion undo/redo.
-     */
+
+    // Assure la gestion globale des opérations undo/redo (annulation/rétablissement), indépendamment du composant.
     private UndoRedoService undoRedoService;
 
     // ===== GETTERS POUR LES PROPRIÉTÉS =====
@@ -167,6 +146,8 @@ public class MainController {
     public ObjectProperty<Tool> activeToolProperty() { 
         return activeTool; 
     }
+
+    // ===== MÉTHODES POUR LE SUIVI DES MODIFICATIONS =====
 
     public boolean isCanvasModified() {
         return canvasStateManager != null && canvasStateManager.isCanvasModified();
@@ -303,7 +284,8 @@ public class MainController {
 
     private void setupDrawingCanvas() {
         drawingCanvas = new Canvas(800, 600);
-        imageContainer.getChildren().add(1, drawingCanvas); //le "1" correspond à l'index : ImageView < drawingCanvas < maskCanvas (pour le crop)
+        // "1" correspond à l'index : ImageView < drawingCanvas < maskCanvas (pour le crop)
+        imageContainer.getChildren().add(1, drawingCanvas); 
     }
 
     private void setupBindings() {
@@ -413,11 +395,6 @@ public class MainController {
                     if (!shouldClose) {
                         // L'utilisateur a annulé
                         event.consume();
-                    } else {
-                        // Si l'utilisateur veut sauvegarder, on sauvegarde
-                        // (checkForWindowClose retourne true si l'utilisateur veut sauvegarder ou ignorer)
-                        // On ne peut pas savoir ici s'il faut sauvegarder, donc on laisse la fenêtre se fermer
-                        // La sauvegarde devrait être gérée avant d'arriver ici
                     }
                 }
             });
@@ -452,8 +429,8 @@ public class MainController {
         
         // Vérifier s'il y a des modifications non sauvegardées
         boolean shouldContinue = unsavedChangesHandler.checkAndHandle(
-                "Ouvrir une image",
-                "Voulez-vous sauvegarder avant de continuer ?",
+                "Open Image",
+                "Do you want to save before continuing?",
                 ownerStage
         );
         
@@ -491,8 +468,8 @@ public class MainController {
         
         // Vérifier s'il y a des modifications non sauvegardées
         boolean shouldContinue = unsavedChangesHandler.checkAndHandle(
-                "Créer un nouveau canvas",
-                "Voulez-vous sauvegarder avant de créer un nouveau canvas ?",
+                "Create New Canvas",
+                "Do you want to save before creating a new canvas?",
                 ownerStage
         );
         
@@ -515,7 +492,7 @@ public class MainController {
         }
     }
 
-    // ===== GESTION DES OUTILS =====
+    // ===== GESTION DES DIALOGUES NON MODAUX =====
     
     /**
      * Ouvre le sélecteur de couleur.
@@ -540,12 +517,9 @@ public class MainController {
         }
     }
 
-    public void openMosaicDialog() {
-        dialogCoordinator.openMosaicDialog();
-        }
-
     // ===== UNDO/REDO =====
-    
+    // méthodes pour l'undo/redo
+
     /**
      * Annule la dernière opération (undo).
      */
@@ -577,6 +551,8 @@ public class MainController {
         }
 
     // ===== TRANSFORMATIONS =====
+    // appliquer les transformations d'image
+    // en sauvegardant l'état pour undo/redo si disponible
 
     public void applyClockwiseRotation(ActionEvent event) {
         if (undoRedoService != null) {
@@ -643,6 +619,14 @@ public class MainController {
         }
     }
 
+    /**
+     * Ouvre le dialogue Mosaic pour appliquer l'effet mosaïque.
+     */
+    @FXML
+    private void openMosaicDialog() {
+        dialogCoordinator.openMosaicDialog();
+    }
+    
     /**
      * Ouvre le dialogue Seam Carving pour redimensionner l'image.
      */

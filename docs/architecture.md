@@ -37,10 +37,13 @@ src/main/resources/imageprocessingapp/
    - `CanvasStateManager.markAsSaved()` réinitialise l'état de modification.
    - La `ImageView` se met à jour via le binding `currentImageProperty`.
 
-2. **Sélection d’un outil de dessin**
-   - L’utilisateur active le pinceau dans la barre d’outils.
-   - `ToolSelectorController` instancie `PaintTool` et l’injecte dans `MainController.activeToolProperty`.
-   - Les événements souris sur le canevas déclenchent `tool.onMouseDragged(...)` qui appelle `ImageModel.drawCircle(...)`.
+2. **Sélection d'un outil de dessin**
+   - L'utilisateur active un outil (pinceau, gomme, ou pipette) dans la barre d'outils.
+   - `ToolSelectorController` instancie l'outil correspondant (`PaintTool`, `EraseTool`, ou `PickerTool`) et l'injecte dans `MainController.activeToolProperty`.
+   - Les événements souris sur le canevas déclenchent `tool.onMouseDragged(...)` qui appelle les méthodes de dessin appropriées.
+   - Pour le pinceau : dessine des cercles avec la couleur sélectionnée.
+   - Pour la gomme : efface en dessinant en blanc ou en transparent selon le contexte.
+   - Pour la pipette : lit la couleur du pixel sous la souris et met à jour `selectedColorProperty`.
 
 3. **Application de l’effet mosaïque**
    - L’utilisateur choisit `Filters > Mosaic Effect`.
@@ -122,6 +125,8 @@ src/main/resources/imageprocessingapp/
 - `UnsavedChangesHandler` : gère les modifications non sauvegardées et affiche les dialogues de confirmation.
 - `DialogCoordinator` : coordonne l'ouverture des dialogues modaux (couleur, mosaïque, seam carving).
 - `EventHandlerManager` : gère les événements souris et clavier.
+- `ToolSelectorController` : gère la sélection des outils de dessin (pinceau, gomme, pipette).
+- `PaintTool`, `EraseTool`, `PickerTool` : outils de dessin implémentant l'interface `Tool`.
 - `MosaicDialogController` + `MosaicFilterService` : appliquent l'effet mosaïque.
 - `SeamCarvingDialogController` + `SeamCarvingService` : redimensionnent l'image via Seam Carving.
 - `RotateOperation`, `SymmetryOperation`, `CropOperation` : opérations géométriques sur l'image.

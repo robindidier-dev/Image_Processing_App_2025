@@ -65,28 +65,70 @@ public class ImageOperationService {
         try {
             // On convertit canvas + image de fond en une image avant de la faire tourner
             WritableImage overlaySnapshot = drawingService.snapshotCanvas();
+
+            // On prépare une variable qui contiendra la version tournée du dessin 
             WritableImage rotatedOverlay = null;
+
+            // Si il y a des éléments sur le canvas
             if (overlaySnapshot != null) {
                 ImageModel overlayModel = new ImageModel(overlaySnapshot);
+                // On applique l'opération de rotation sur ce modèle, ce qui retourne l'image tournée du dessin
                 rotatedOverlay = new RotateOperation(direction).apply(overlayModel);
             }
 
+            // On prépare une variable qui contiendra la version tournée de l'image de base 
             WritableImage rotatedBase = null;
+
+            // Si il y a une image de base chargée
             if (imageModel.hasImage()) {
+                // On applique la rotation à cette image via le DrawingService (qui gère l'opération)
                 rotatedBase = drawingService.applyOperation(new RotateOperation(direction));
+                // On met à jour la propriété observable pour que la vue réagisse et affiche la nouvelle image
                 currentImageProperty.set(rotatedBase);
+                // On ajuste la taille du canvas de dessin pour coller aux nouvelles dimensions de l'image tournée
                 drawingService.resizeCanvasToImage(rotatedBase);
+            } else if (rotatedOverlay != null) {
+                // Adapter l'overlay tourné pour tenir dans la taille d'affichage actuelle du canvas
+                double maxW = drawingCanvas.getWidth();
+                double maxH = drawingCanvas.getHeight();
+                double ow = rotatedOverlay.getWidth();
+                double oh = rotatedOverlay.getHeight();
+
+                if (ow > 0 && oh > 0 && maxW > 0 && maxH > 0) {
+                    double ratio = Math.min(maxW / ow, maxH / oh);
+                    double displayW = Math.max(1.0, Math.floor(ow * ratio));
+                    double displayH = Math.max(1.0, Math.floor(oh * ratio));
+                    drawingCanvas.setWidth(displayW);
+                    drawingCanvas.setHeight(displayH);
+                } else {
+                    // Fallback: dimensions brutes si invalide
+                    drawingCanvas.setWidth(ow);
+                    drawingCanvas.setHeight(oh);
+                }
             }
 
+            // On recrée à zéro un canevas de dessin, avec les nouvelles dimensions de l'image tournée
             drawingService.createDefaultCanvas();
+
+            // Si on a une version tournée du dessin (overlay), on la redessine sur le nouveau canvas
             if (rotatedOverlay != null) {
                 drawingService.drawImageOnCanvas(rotatedOverlay);
             }
+
+            // On réinitialise le maskCanvas pour le crop au bonne dimensions
+            if (maskCanvas != null) {
+                maskCanvas.setWidth(drawingCanvas.getWidth());
+                maskCanvas.setHeight(drawingCanvas.getHeight());
+                maskCanvas.getGraphicsContext2D().clearRect(0, 0, maskCanvas.getWidth(), maskCanvas.getHeight());
+            }
             
+            // On marque l'état du canvas comme modifié, ce qui active la gestion d'undo/redos et la sauvegarde si besoin
             stateManager.markAsModified(imageModel.hasImage());
+
+            // On retourne true pour signaler que la rotation s'est bien passée
             return true;
         } catch (IllegalStateException e) {
-            showAlert("Rotation impossible", e.getMessage());
+            showAlert("Rotation Failed", e.getMessage());
             return false;
         }
     }
@@ -102,11 +144,15 @@ public class ImageOperationService {
             // On convertit canvas + image de fond en une image avant de la symétriser
             WritableImage overlaySnapshot = drawingService.snapshotCanvas();
             WritableImage mirroredOverlay = null;
+
+            // Si le canvas contient un dessin, appliquer la symétrie dessus
             if (overlaySnapshot != null) {
                 ImageModel overlayModel = new ImageModel(overlaySnapshot);
                 mirroredOverlay = new SymmetryOperation(axis).apply(overlayModel);
             }
 
+            // Appliquer la symétrie sur l'image de fond si elle existe,
+            // mettre à jour l'image courante et adapter la taille du canvas
             WritableImage flippedBase = null;
             if (imageModel.hasImage()) {
                 flippedBase = drawingService.applyOperation(new SymmetryOperation(axis));
@@ -114,15 +160,21 @@ public class ImageOperationService {
                 drawingService.resizeCanvasToImage(flippedBase);
             }
 
+            // On récrée un nouveau canvas vierge adapté aux nouvelles dimensions
             drawingService.createDefaultCanvas();
+
+            // Si un dessin tourné existe, on le redessine sur le nouveau canvas
             if (mirroredOverlay != null) {
                 drawingService.drawImageOnCanvas(mirroredOverlay);
             }
             
+            // Marque l'état comme modifié (pour l'undo/redo et la sauvegarde)
             stateManager.markAsModified(imageModel.hasImage());
+
+            // Succès
             return true;
         } catch (IllegalStateException e) {
-            showAlert("Symétrie impossible", e.getMessage());
+            showAlert("Symmetry Failed", e.getMessage());
             return false;
         }
     }
@@ -134,8 +186,9 @@ public class ImageOperationService {
      * @return L'image croppée ou null en cas d'erreur
      */
     public WritableImage applyCrop(Rectangle2D cropArea) {
+        // Si la zone est invalide, on prévient l'utilisateur et on annule
         if (cropArea == null) {
-            showAlert("Cropping impossible", "Zone de sélection invalide.");
+            showAlert("Cropping Failed", "Invalid selection area.");
             return null;
         }
 
@@ -143,26 +196,29 @@ public class ImageOperationService {
             // Créer une image composite (fond + canvas)
             WritableImage compositeSnapshot = createCompositeSnapshot();
             if (compositeSnapshot == null) {
-                showAlert("Cropping impossible", "Impossible de créer l'image composite.");
+                showAlert("Cropping Failed", "Unable to create composite image.");
                 return null;
             }
 
             // Convertir les coordonnées d'affichage vers coordonnées image native
             Rectangle2D scaledCropArea = convertCropAreaToImageCoordinates(cropArea, compositeSnapshot);
             if (scaledCropArea == null) {
-                showAlert("Cropping impossible", "Zone de sélection invalide.");
+                showAlert("Cropping Failed", "Invalid selection area.");
                 return null;
             }
 
             // Effectuer le crop
             WritableImage croppedImage = performCrop(compositeSnapshot, scaledCropArea);
+
+            // Si crop réussi, on met à jour le modèle et l'affichage
             if (croppedImage != null) {
                 updateImageAfterCrop(croppedImage);
             }
             
+            // On retourne le résultat (null en cas d'échec)
             return croppedImage;
         } catch (Exception e) {
-            showAlert("Cropping impossible", e.getMessage());
+            showAlert("Cropping Failed", e.getMessage());
             return null;
         }
     }
@@ -175,12 +231,12 @@ public class ImageOperationService {
     private WritableImage createCompositeSnapshot() {
         Image compositeImage = drawingService.createCompositeImage();
         if (compositeImage == null) return null;
-
+        // Si l'image composite est déjà une WritableImage, on la retourne telle quelle
         if (compositeImage instanceof WritableImage) {
             return (WritableImage) compositeImage;
         }
 
-        // Convertir en WritableImage si nécessaire
+        // Sinon, on crée une nouvelle WritableImage à partir du PixelReader pour garantir la mutabilité
         return new WritableImage(
                 compositeImage.getPixelReader(),
                 (int) compositeImage.getWidth(),

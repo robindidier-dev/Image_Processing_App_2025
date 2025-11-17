@@ -325,31 +325,5 @@ class MainControllerTest {
         assertTrue(latch.await(10, TimeUnit.SECONDS));
         assertTrue(noException.get());
     }
-
-    @Test
-    void testOpenMosaicDialog() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicBoolean noException = new AtomicBoolean(false);
-        
-        Platform.runLater(() -> {
-            try {
-                // Créer une image
-                WritableImage testImage = new WritableImage(50, 50);
-                testImage.getPixelWriter().setColor(0, 0, Color.RED);
-                mainController.currentImageProperty().set(testImage);
-                
-                mainController.openMosaicDialog();
-                noException.set(true);
-            } catch (Exception e) {
-                // Exception possible
-                noException.set(true);
-            } finally {
-                latch.countDown();
-            }
-        });
-        
-        assertTrue(latch.await(10, TimeUnit.SECONDS));
-        assertTrue(noException.get());
-    }
 }
 

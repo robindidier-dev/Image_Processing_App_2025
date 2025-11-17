@@ -136,7 +136,7 @@ public class DrawingService {
                 drawingCanvas.setWidth(displayWidth);
                 drawingCanvas.setHeight(displayHeight);
                 
-                // IMPORTANT: Nettoyer complètement le canvas après redimensionnement
+                // Nettoyer complètement le canvas après redimensionnement
                 GraphicsContext gc = drawingCanvas.getGraphicsContext2D();
                 gc.clearRect(0, 0, displayWidth, displayHeight);
                 

@@ -39,17 +39,17 @@ public class UnsavedChangesHandler {
         }
         
         Alert alert = new Alert(AlertType.CONFIRMATION);
-        alert.setTitle("Modifications non sauvegardées");
-        alert.setHeaderText("Vous avez des modifications non sauvegardées.");
+        alert.setTitle("Unsaved Changes");
+        alert.setHeaderText("You have unsaved changes.");
         alert.setContentText(actionMessage);
         
         if (parentStage != null) {
             alert.initOwner(parentStage);
         }
         
-        ButtonType saveButton = new ButtonType("Sauvegarder");
-        ButtonType discardButton = new ButtonType("Ignorer");
-        ButtonType cancelButton = new ButtonType("Annuler");
+        ButtonType saveButton = new ButtonType("Save");
+        ButtonType discardButton = new ButtonType("Discard");
+        ButtonType cancelButton = new ButtonType("Cancel");
         
         alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
         
@@ -92,17 +92,17 @@ public class UnsavedChangesHandler {
         }
         
         Alert alert = new Alert(AlertType.CONFIRMATION);
-        alert.setTitle("Modifications non sauvegardées");
-        alert.setHeaderText("Vous avez des modifications non sauvegardées.");
-        alert.setContentText("Voulez-vous sauvegarder avant de fermer ?");
+        alert.setTitle("Unsaved Changes");
+        alert.setHeaderText("You have unsaved changes.");
+        alert.setContentText("Do you want to save before closing?");
         
         if (parentStage != null) {
             alert.initOwner(parentStage);
         }
         
-        ButtonType saveButton = new ButtonType("Sauvegarder");
-        ButtonType discardButton = new ButtonType("Ignorer");
-        ButtonType cancelButton = new ButtonType("Annuler");
+        ButtonType saveButton = new ButtonType("Save");
+        ButtonType discardButton = new ButtonType("Discard");
+        ButtonType cancelButton = new ButtonType("Cancel");
         
         alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
         

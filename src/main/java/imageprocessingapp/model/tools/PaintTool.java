@@ -40,8 +40,12 @@ public class PaintTool implements Tool {
      * Initialisées à -1 pour indiquer qu'aucun point précédent n'existe.
      */
     private double prevX = -1, prevY = -1;
-    
-    // Callback pour notifier les modifications
+
+
+    /**
+     * Callback appelé lorsqu'une modification est effectuée.
+     * Permet à l'application de répondre.
+     */
     private Runnable onModificationCallback;
 
     /**
@@ -51,6 +55,7 @@ public class PaintTool implements Tool {
      */
     public PaintTool(GraphicsContext gc) {
         this.gc = gc;
+
         // Configuration du style de dessin par défaut
         gc.setStroke(paintColor);
         gc.setFill(paintColor);
@@ -65,7 +70,8 @@ public class PaintTool implements Tool {
     public void setOnModificationCallback(Runnable callback) {
         this.onModificationCallback = callback;
     }
-    
+
+
     /**
      * Notifie qu'une modification a été effectuée.
      */
@@ -85,6 +91,14 @@ public class PaintTool implements Tool {
     public void onMousePressed(MouseEvent event, ImageModel imageModel) {
         // Si l'on clique sans maintenir, on trace un point à la position où la souris est pressée.
         // Cela correspond aussi au démarrage d'un tracé (début du dessin).
+
+        // Sécuriser la couleur et une taille minimale avant de dessiner un point
+        if (brushSize <= 0) {
+            brushSize = 1.0;
+            gc.setLineWidth(brushSize);
+        }
+        gc.setFill(paintColor); // s'assurer que le point prend la bonne couleur
+        gc.setStroke(paintColor);
 
         prevX = event.getX();
         prevY = event.getY();

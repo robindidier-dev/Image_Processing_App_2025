@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class CropOperationTest {
 
@@ -104,5 +105,80 @@ class CropOperationTest {
         assertEquals(Color.WHITE, cropped.getPixelReader().getColor(0, 0));
     }
 
+    // Teste que apply() retourne null quand l'image est null
+    @Test
+    void applyWithNullImageTest() {
+        ImageModel emptyModel = new ImageModel();
+        // Ne pas définir d'image, donc imageModel.getImage() retournera null
+        Rectangle2D cropArea = new Rectangle2D(0, 0, 2, 2);
+        CropOperation operation = new CropOperation(cropArea);
+        
+        WritableImage result = operation.apply(emptyModel);
+        
+        assertNull(result, "apply() devrait retourner null quand l'image est null");
+    }
+
+    // Teste getCropArea() pour vérifier qu'elle retourne la zone de crop initiale
+    @Test
+    void getCropAreaTest() {
+        Rectangle2D expectedCropArea = new Rectangle2D(1, 1, 2, 2);
+        CropOperation operation = new CropOperation(expectedCropArea);
+        
+        Rectangle2D actualCropArea = operation.getCropArea();
+        
+        assertEquals(expectedCropArea, actualCropArea, "getCropArea() devrait retourner la zone de crop définie");
+        assertEquals(1, actualCropArea.getMinX());
+        assertEquals(1, actualCropArea.getMinY());
+        assertEquals(2, actualCropArea.getWidth());
+        assertEquals(2, actualCropArea.getHeight());
+    }
+
+    // Teste setCropArea() pour vérifier qu'elle modifie la zone de crop
+    @Test
+    void setCropAreaTest() {
+        Rectangle2D initialCropArea = new Rectangle2D(0, 0, 2, 2);
+        CropOperation operation = new CropOperation(initialCropArea);
+        
+        // Vérifier la zone initiale
+        assertEquals(initialCropArea, operation.getCropArea());
+        
+        // Modifier la zone de crop
+        Rectangle2D newCropArea = new Rectangle2D(1, 1, 2, 1);
+        operation.setCropArea(newCropArea);
+        
+        // Vérifier que la zone a été modifiée
+        Rectangle2D actualCropArea = operation.getCropArea();
+        assertEquals(newCropArea, actualCropArea, "setCropArea() devrait modifier la zone de crop");
+        assertEquals(1, actualCropArea.getMinX());
+        assertEquals(1, actualCropArea.getMinY());
+        assertEquals(2, actualCropArea.getWidth());
+        assertEquals(1, actualCropArea.getHeight());
+    }
+
+    // Teste que setCropArea() affecte le résultat de apply()
+    @Test
+    void setCropAreaAffectsApplyTest() {
+        Rectangle2D initialCropArea = new Rectangle2D(0, 0, 2, 2);
+        CropOperation operation = new CropOperation(initialCropArea);
+        
+        // Appliquer avec la zone initiale
+        WritableImage cropped1 = operation.apply(imageModel);
+        assertEquals(2, cropped1.getWidth());
+        assertEquals(2, cropped1.getHeight());
+        assertEquals(Color.RED, cropped1.getPixelReader().getColor(0, 0));
+        
+        // Modifier la zone de crop
+        Rectangle2D newCropArea = new Rectangle2D(2, 0, 2, 2);
+        operation.setCropArea(newCropArea);
+        
+        // Appliquer avec la nouvelle zone
+        WritableImage cropped2 = operation.apply(imageModel);
+        assertEquals(2, cropped2.getWidth());
+        assertEquals(2, cropped2.getHeight());
+        // La nouvelle zone commence à (2,0), donc le pixel (0,0) de la nouvelle image
+        // correspond au pixel (2,0) de l'image originale (BLUE)
+        assertEquals(Color.BLUE, cropped2.getPixelReader().getColor(0, 0));
+        assertEquals(Color.YELLOW, cropped2.getPixelReader().getColor(1, 0));
+    }
 
 }
