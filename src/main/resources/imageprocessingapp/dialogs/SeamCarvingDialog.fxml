@@ -25,8 +25,8 @@
         <ColumnConstraints percentWidth="60" halignment="CENTER"/>
             </columnConstraints>
 
-    <!-- Label compact pour la largeur -->
-    <Label text="Largeur cible"
+    <!-- Label pour la largeur -->
+    <Label text="New width (in pixels)"
            GridPane.rowIndex="0"
            GridPane.columnIndex="0"
            GridPane.columnSpan="2"
@@ -45,8 +45,8 @@
             GridPane.hgrow="NEVER"
             styleClass="seamSlider" />
 
-    <!-- Label compact pour la hauteur -->
-    <Label text="Hauteur cible"
+    <!-- Label pour la hauteur -->
+    <Label text="New height (in pixels)"
            GridPane.rowIndex="2"
            GridPane.columnIndex="0"
            GridPane.columnSpan="2"
@@ -65,7 +65,7 @@
             GridPane.hgrow="NEVER"
             styleClass="seamSlider" />
 
-    <!-- Boutons compacts -->
+    <!-- Boutons -->
     <HBox GridPane.rowIndex="4"
           GridPane.columnIndex="0"
           GridPane.columnSpan="2"

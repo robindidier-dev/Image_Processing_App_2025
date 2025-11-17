@@ -58,7 +58,6 @@ public class MosaicFilter {
         Point2D[] points = new Point2D[pointCount];
 
         for (int i=0; i<pointCount; i++) {
-
             Random rand = new Random();
             // Entier dans [[0, width-1]]
             int x = rand.nextInt(width);
@@ -71,27 +70,37 @@ public class MosaicFilter {
         return points;
     }
 
-    /** Génère des points de départ régulièrement espacés dans l'image
-     * pour créer une grille de points de départ.
+
+    /**
+     * Génère un ensemble de points répartis régulièrement sur une grille 2D.
+     * La grille est calculée dynamiquement en fonction du nombre total de points et des dimensions de l’image.
      *
      * @return Un tableau de Point2D.
-    */
+     */
     public Point2D[] generateRegularGridPoints() {
+
         Point2D[] points = new Point2D[pointCount];
-    
+
+        // Nombre de colonnes et lignes
         int cols = (int) Math.ceil(Math.sqrt(pointCount * (width / (double) height)));
         int rows = (int) Math.ceil(pointCount / (double) cols);
-    
+
+        // Espacement horizontal et vertical entre les points
         double stepX = width / (double) cols;
         double stepY = height / (double) rows;
-    
+
         int index = 0;
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols && index < pointCount; col++) {
+
+                // Calcul des coordonnées du point centré dans sa cellule
                 int x = (int) Math.round((col + 0.5) * stepX);
                 int y = (int) Math.round((row + 0.5) * stepY);
+
+                // Les coordonnées ne dépassent pas les limites de l’image
                 x = Math.min(x, width - 1);
                 y = Math.min(y, height - 1);
+
                 points[index++] = new Point2D(x, y);
             }
         }
@@ -102,7 +111,7 @@ public class MosaicFilter {
 
     public Image applyMosaic() {
 
-        // Génération de n points aléatoires (seeds) et insertion dans le KdTree
+        // Génération de n points aléatoires ou non (seeds) et insertion dans le KdTree
         Point2D[] seeds = switch (seedMode) {
             case RANDOM -> generateRandomPoints();
             case REGULAR_GRID -> generateRegularGridPoints();
@@ -111,13 +120,12 @@ public class MosaicFilter {
         KdTree kdTree = new KdTree();
         for (Point2D p : seeds) kdTree.insert(p);
 
-
-        // Création d'un dictionnaire {seed : [points appartenant à une cellule]}
+        // Création d'un dictionnaire {seed : [liste de points appartenant à une cellule]}
         // Initiation {seed1 : [seed1], etc}
         Map<Point2D, List<Point2D>> cells = new HashMap<>(seeds.length);
         for (Point2D seed : seeds) {
             List<Point2D> list = new ArrayList<>(1);
-            list.add(seed); // initialisation {seed : [seed]}
+            list.add(seed);
             cells.put(seed, list);
         }
 
@@ -128,6 +136,7 @@ public class MosaicFilter {
                 Point2D target = new Point2D(x, y); // Pixel actuel
                 Optional<Point2D> nearest = kdTree.findNearest(target); // Pixel du KdTree le plus proche
 
+                // Gestion du Optional<Point2D>
                 if (nearest.isPresent()) {
                     Point2D seed = nearest.get();
                     // Test si le target = seed pour ne pas que seed soit deux fois dans le dictionnaire
@@ -138,8 +147,7 @@ public class MosaicFilter {
                 }
             }
         }
-        // On appelle une méthode calculant la moyenne des couleurs et
-        // renvoyant une WritableImage.
+        // On appelle une méthode calculant la moyenne des couleurs et renvoyant une WritableImage.
         return applyColor(cells);
     }
 
@@ -147,7 +155,7 @@ public class MosaicFilter {
         WritableImage writableImage = new WritableImage(width, height);
         PixelWriter writer = writableImage.getPixelWriter();
 
-        // Itération sur les entries (couple clé valeur) du dictionnaire
+        // Itération sur les entries (couples clé, valeur) du dictionnaire
         for (Map.Entry<Point2D, List<Point2D>> entry : cells.entrySet()) {
             List<Point2D> cell = entry.getValue();
             if (cell == null || cell.isEmpty()) {

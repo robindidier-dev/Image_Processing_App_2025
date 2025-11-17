@@ -78,11 +78,14 @@ public class SeamCarver {
 
         double[][] cumulativeEnergyMap =  new double[nbLignes][nbColonnes];
 
+        // Première ligne identique à la carte d'énergie : on recopie
         for (int j=0;j<nbColonnes;j++) {
             cumulativeEnergyMap[0][j] = energyMap[0][j];
         }
 
         for (int i=1;i<nbLignes;i++) {
+
+            // Bord gauche
             cumulativeEnergyMap[i][0] = energyMap[i][0] + Math.min(cumulativeEnergyMap[i-1][0], cumulativeEnergyMap[i-1][1]);
 
             for (int j = 1; j<nbColonnes -1; j++) {
@@ -90,6 +93,7 @@ public class SeamCarver {
                 cumulativeEnergyMap[i][j] = energyMap[i][j] + minOf3;
             }
 
+            // Bord droit
             cumulativeEnergyMap[i][nbColonnes-1] = energyMap[i][nbColonnes - 1] + Math.min(cumulativeEnergyMap[i-1][nbColonnes - 2], cumulativeEnergyMap[i-1][nbColonnes - 1]);
         }
 
@@ -99,6 +103,8 @@ public class SeamCarver {
 
     /**
      * Retrouve une couture minimale à partir de la carte d'énergie cumulative.
+     * -> backtracking depuis la dernière ligne vers la première
+     * pour retrouver la colonne à chaque ligne formant la couture d'énergie minimale.
      *
      * @param cumulativeEnergy carte cumulative générée par {@link #computeCumulativeEnergy(double[][])}
      * @return liste d'indices de colonnes (un par ligne) représentant la couture
@@ -124,15 +130,16 @@ public class SeamCarver {
         seamList.add(indexEnergyMin);
 
 
-        // Backtracking de l'avant-dernière ligne vers le haut
+        // Backtracking de l'avant-dernière ligne vers le haut, ligne par ligne
         for (int i=nbLignes-2;i>=0;i--) {
             int j = indexEnergyMin;
-            // Bord gauche : on compare seulement j et j+1
+
+            // Bord gauche : on compare seulement j et j+1 (0 et 1)
             if (j == 0) {
                 indexEnergyMin = cumulativeEnergy[i][0] < cumulativeEnergy[i][1] ? 0 : 1;
             }
 
-            // Bord droit : on compare seulement j-1 et j
+            // Bord droit : on compare seulement j-1 et j (nbColonnes-1 et nbColonnes-2)
             else if (j == nbColonnes - 1) {
                 indexEnergyMin = cumulativeEnergy[i][nbColonnes-1] < cumulativeEnergy[i][nbColonnes - 2] ? nbColonnes-1 : nbColonnes - 2;
             }
@@ -159,7 +166,7 @@ public class SeamCarver {
         }
 
 
-        // INVERSER LA LISTE pour avoir de haut en bas ✓
+        // inverser la liste pour avoir de haut en bas
         Collections.reverse(seamList);
 
         return seamList;
@@ -211,7 +218,3 @@ public class SeamCarver {
         return newImage;
     }
 }
-
-
-
-// pour suppression ligne (horizontal) : tourner l'image, effectuer changement, puis tourner dans l'autre sens

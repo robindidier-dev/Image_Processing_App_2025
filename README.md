@@ -1,13 +1,71 @@
 # ImageProcessingApp
 
-Une application JavaFX de traitement d'image développée en équipe avec les fonctionnalités suivantes :
-- **Outils de dessin** (pinceau, pipette, gomme)
-- **Effet mosaïque** utilisant un **KdTree**
-- **Opérations géométriques** (symétries, rotations, crop)
-- **Seam Carving** pour redimensionner intelligemment les images
-- **Système de couleurs** avec sélecteur RGB
-- **Undo/Redo** pour annuler et refaire les opérations
-- **Zoom et navigation** (molette de souris, glisser-déposer, reset)
+
+Application JavaFX de traitement d'image & dessin développée en équipe avec les fonctionnalités suivantes :
+
+**Fonctionnalités basiques**
+- **Import d'images** au format jpg ou png ;
+- **Export d'images retouchées** au format jpg ou png ;
+- **Outils de dessin** (pinceau, pipette, gomme) sur canvas vide ou image accompagné :
+  - d'un **système de couleurs** avec sélecteur RGB ;
+  - d'un **slider de choix de l'épaisseur** du pinceau et de la gomme.
+
+**Opérations sur les images**
+- **Opérations géométriques** (symétries, rotations, crop) ;
+- **Effet mosaïque** utilisant un **KdTree** ;
+- **Seam Carving** pour redimensionner intelligemment les images.
+
+**Ergonomie**
+- **Undo/Redo** pour annuler et refaire les opérations ;
+- **Zoom et navigation** (molette de souris, glisser-déposer, reset) ;
+- **Raccourcis clavier** pour bon nombre d'opérations.
+
+
+## Instructions d'utilisation
+
+**Pour dessiner immédiatement** : sélectionner le pinceau, une couleur (via le rectangle de gauche) et le taille avec le slider pour dessiner sur le canvas.
+
+**Pour importer une image** : File > Open. 
+
+**Pour exporter un travail** :  File > Save.
+
+**Appliquer une opération géométrique à une image** : menu Edit.
+
+**Zoom et déplacement** : molette de la souris pour zoomer, clic gauche continu (sans outil sélectionné) pour se déplacer dans le canvas. 
+
+**Effet mosaïque** : Edit > Mosaic effect. Une fenêtre avec prévisualisation s'ouvre. Choisir le nombre de cellules de l'image et distribution aléatoire ou régulière (cellules carré). Appuyer sur Ok pour valider.
+
+**Redimensionnement par seam carving** : Edit > Resize with seam carving. choisir largeur & hauteur désirée et valider avec Ok. Pas de prévisualisation pour des raisons de performances.
+
+**Raccourcis clavier utiles** :
+- Ctrl+S : enregistrer l’image ;
+- Ctrl+O : ouvrir une image ;
+- Ctrl+N : nouveau canevas ;
+- Ctrl+W : fermer l’application ;
+- Ctrl+R : réinitialiser la vue ;
+- Ctrl+Z : annuler ;
+- Ctrl+W : rétablir.
+
+##  Comment lancer le projet
+
+### Via Maven 
+```bash
+# Compiler le projet
+mvn compile
+
+# Lancer l'application
+mvn javafx:run
+```
+
+### Intégration continue locale
+```bash
+# Compiler et exécuter tous les tests avec le profil CI
+mvn -Pci verify
+```
+
+### Via IntelliJ IDEA
+   - Clic droit sur `MainApp.java` → `Run 'MainApp.main()'`
+   - Ou utiliser le bouton ▶️ vert à côté de la classe `MainApp`
 
 ## Architecture du projet
 
@@ -176,29 +234,9 @@ Le pattern **Model-View-Controller** organise le code selon trois responsabilit�
 - **EnergyCalculator / SeamCarver** : Calcul d'énergie et suppression de seams
 - **MosaicDialog / SeamCarvingDialog** : Paramétrage des filtres (UI)
 
-##  Comment lancer
-
-### Via Maven 
-```bash
-# Compiler le projet
-mvn compile
-
-# Lancer l'application
-mvn javafx:run
-```
-
-### Intégration continue locale
-```bash
-# Compiler et exécuter tous les tests avec le profil CI
-mvn -Pci verify
-```
-
-### Via IntelliJ IDEA
-   - Clic droit sur `MainApp.java` → `Run 'MainApp.main()'`
-   - Ou utiliser le bouton ▶️ vert à côté de la classe `MainApp`
 
 ## Développement en équipe
 
-Le projet est développé par **Robin**, **Adrien** et **Paul-Antoine** 
+Le projet est développé par **Robin**, **Adrien** et **Paul-Antoine**. 
 
 Voir `plan.md` pour le détail des tâches et la roadmap de développement.

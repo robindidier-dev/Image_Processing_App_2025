@@ -65,7 +65,6 @@ public class MainApp extends Application {
                 event.consume();
             } else if (event.isShortcutDown() && event.getCode() == javafx.scene.input.KeyCode.R) {
                 controller.resetView();
-                System.out.println("ok");
                 event.consume();
             }
         });

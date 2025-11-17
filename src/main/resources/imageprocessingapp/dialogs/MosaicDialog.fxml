@@ -23,8 +23,8 @@
         <ColumnConstraints percentWidth="60" halignment="CENTER"/>
     </columnConstraints>
 
-    <!-- Label compact -->
-    <Label text="Nombre de cellules"
+    <!-- Label -->
+    <Label text="Number of cells"
            GridPane.rowIndex="0"
            GridPane.columnIndex="0"
            GridPane.columnSpan="2"
@@ -32,13 +32,13 @@
            alignment="CENTER"/>
 
     <CheckBox fx:id="regularGridCheckBox"
-            text="Grille régulière"
+            text="Regular grid"
             GridPane.rowIndex="2"
             GridPane.columnIndex="0"
             GridPane.columnSpan="2"
             alignment="CENTER" />
 
-    <!-- Slider compact -->
+    <!-- Slider -->
     <Slider fx:id="mosaicSlider"
             min="0" max="10000" value="0"
             majorTickUnit="5000" minorTickCount="0"
@@ -50,7 +50,7 @@
             GridPane.hgrow="NEVER"
             styleClass="mosaicSlider" />
 
-    <!-- Boutons compacts -->
+    <!-- Boutons -->
     <HBox GridPane.rowIndex="3" 
           GridPane.columnIndex="0"
           GridPane.columnSpan="2"

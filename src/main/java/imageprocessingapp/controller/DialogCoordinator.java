@@ -49,7 +49,7 @@ public class DialogCoordinator {
                 new ColorPickerDialogController().show(mainController, ownerStage);
             }
         } catch (Exception e) {
-            showAlert("Erreur", "Impossible d'ouvrir le sélecteur de couleur : " + e.getMessage());
+            showAlert("Error", "Unable to open color picker: " + e.getMessage());
         }
     }
     
@@ -63,7 +63,7 @@ public class DialogCoordinator {
                 MosaicDialogController.show(mainController, ownerStage, currentImageProperty, imageModel);
             }
         } catch (Exception e) {
-            showAlert("Erreur", "Impossible d'ouvrir le MosaicDialog : " + e.getMessage());
+            showAlert("Error", "Unable to open MosaicDialog: " + e.getMessage());
         }
     }
     
@@ -77,7 +77,7 @@ public class DialogCoordinator {
                 SeamCarvingDialogController.show(mainController, ownerStage, currentImageProperty, imageModel);
             }
         } catch (Exception e) {
-            showAlert("Erreur", "Impossible d'ouvrir le SeamCarvingDialog : " + e.getMessage());
+            showAlert("Error", "Unable to open SeamCarvingDialog: " + e.getMessage());
         }
     }
     

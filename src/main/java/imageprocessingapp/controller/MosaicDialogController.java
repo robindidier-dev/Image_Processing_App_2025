@@ -18,7 +18,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * Contrôleur du widget de choix de couleur ColorPicker.
+ * Contrôleur du dialogue de configuration du filtre mosaïque.
  */
 
 public class MosaicDialogController {

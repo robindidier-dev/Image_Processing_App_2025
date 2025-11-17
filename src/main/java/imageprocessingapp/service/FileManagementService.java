@@ -55,7 +55,7 @@ public class FileManagementService {
      */
     public boolean openImage(Stage parentStage) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Ouvrir une image");
+        fileChooser.setTitle("Open Image");
         
         // Définir les extensions acceptées
         FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter(
@@ -80,8 +80,8 @@ public class FileManagementService {
         // Vérifier l'extension du fichier
         String fileName = file.getName().toLowerCase();
         if (!fileName.endsWith(".png") && !fileName.endsWith(".jpg") && !fileName.endsWith(".jpeg")) {
-            showAlert("Extension invalide", 
-                    "Veuillez sélectionner un fichier avec l'extension .png, .jpg ou .jpeg.");
+            showAlert("Invalid Extension", 
+                    "Please select a file with .png, .jpg or .jpeg extension.");
             return false;
         }
         
@@ -107,7 +107,7 @@ public class FileManagementService {
             
             return true;
         } catch (Exception e) {
-            showAlert("Erreur de chargement", "Impossible de charger l'image : " + e.getMessage());
+            showAlert("Load Error", "Unable to load image: " + e.getMessage());
             return false;
         }
     }
@@ -120,7 +120,7 @@ public class FileManagementService {
      */
     public boolean saveImage(Stage parentStage) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Sauvegarder l'image");
+        fileChooser.setTitle("Save Image");
 
         // Générer le nom du fichier à enregistrer par défaut
         String defaultFileName = "dessin.png";
@@ -205,7 +205,7 @@ public class FileManagementService {
             
             return true;
         } catch (IOException e) {
-            showAlert("Erreur de sauvegarde", "Impossible de sauvegarder l'image : " + e.getMessage());
+            showAlert("Save Error", "Unable to save image: " + e.getMessage());
             return false;
         }
     }
