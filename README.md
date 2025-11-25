@@ -1,12 +1,12 @@
 # ImageProcessingApp - Application JavaFX de traitement d'image & dessin
 
-**Crédits**
+## Crédits
 - Robin DIDIER       (https://github.com/Robin1415)
 - Paul-Antoine PARIS (https://github.com/Hexa-Da)
 - Adrien LEFEBVRE    (https://github.com/adrienlefebvre6)
 
 
-Fonctionnalités :
+## Fonctionnalités
 
 **Fonctionnalités basiques**
 - **Import d'images** au format jpg ou png ;
