@@ -1,11 +1,9 @@
 # ImageProcessingApp
 
 Crédits : 
-  Robin DIDIER       (https://github.com/Robin1415)
-  
-  Paul-Antoine PARIS (https://github.com/Hexa-Da)
-  
-  Adrien LEFEBVRE    (https://github.com/adrienlefebvre6)
+- Robin DIDIER       (https://github.com/Robin1415)
+- Paul-Antoine PARIS (https://github.com/Hexa-Da)
+- Adrien LEFEBVRE    (https://github.com/adrienlefebvre6)
 
 Application JavaFX de traitement d'image & dessin développée en équipe avec les fonctionnalités suivantes :
 
